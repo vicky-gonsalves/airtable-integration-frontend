@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { DashboardComponent } from 'src/app/dashboard/dashboard.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [DashboardComponent, DashboardComponent, DashboardComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  title = 'airtable-integration-frontend';
-}
+export class AppComponent {}

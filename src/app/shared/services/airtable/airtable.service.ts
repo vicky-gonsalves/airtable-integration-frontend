@@ -10,6 +10,17 @@ export class AirtableService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiHost}/airtable`;
 
+  checkAuthStatus(): Observable<{ authenticated: boolean; message: string }> {
+    return this.http.get<{ authenticated: boolean; message: string }>(
+      `${this.apiUrl}/auth/status`,
+      { withCredentials: true },
+    );
+  }
+
+  getAuthUrl(): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.apiUrl}/auth/url`);
+  }
+
   getBases(): Observable<{ bases: any[] }> {
     return this.http.get<{ bases: any[] }>(`${this.apiUrl}/bases`, { withCredentials: true });
   }
@@ -24,23 +35,11 @@ export class AirtableService {
     return this.http.post(`${this.apiUrl}/sync`, { baseId, tableId }, { withCredentials: true });
   }
 
-  getAuthUrl(): Observable<{ url: string }> {
-    return this.http.get<{ url: string }>(`${this.apiUrl}/auth/url`);
-  }
-
-  submitMfa(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/scrape/auth`, credentials, { withCredentials: true });
-  }
-
-  runScraper(baseId: string, tableId: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/scrape/run`,
-      { baseId, tableId },
-      { withCredentials: true },
-    );
-  }
-
   getData(endpoint: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${endpoint}`);
+    return this.http.get<any[]>(`${this.apiUrl}/${endpoint}`, { withCredentials: true });
+  }
+
+  getRevisions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/revisions`, { withCredentials: true });
   }
 }

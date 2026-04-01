@@ -1,0 +1,35 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <mat-icon class="toolbar-icon">view_list</mat-icon>
+  <span>My Airtable Workspaces</span>
+</mat-toolbar>
+
+<div class="workspace-container">
+  @if (isLoading()) {
+    <div class="state-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="state-text">Loading workspaces...</p>
+    </div>
+  } @else {
+    @if (bases().length > 0) {
+      <div class="grid">
+        @for (base of bases(); track base.id) {
+          <mat-card class="base-card" (click)="goToBase(base.id)" matRipple>
+            <mat-card-header>
+              <div mat-card-avatar class="base-avatar">
+                <mat-icon>table_chart</mat-icon>
+              </div>
+              <mat-card-title class="base-title">{{ base.name }}</mat-card-title>
+              <mat-card-subtitle class="base-subtitle">ID: {{ base.id }}</mat-card-subtitle>
+            </mat-card-header>
+          </mat-card>
+        }
+      </div>
+    } @else {
+      <div class="state-container empty-state">
+        <mat-icon class="empty-icon">folder_off</mat-icon>
+        <h3>No workspaces found</h3>
+        <p>It looks like you don't have any Airtable bases connected to this account yet.</p>
+      </div>
+    }
+  }
+</div>

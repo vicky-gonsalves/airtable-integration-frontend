@@ -1,0 +1,58 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span>Dashboard</span>
+  <span class="spacer"></span>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+    <mat-label>Integration</mat-label>
+    <mat-select [value]="'Airtable'">
+      <mat-option value="Airtable">Airtable</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+    <mat-label>Entity (Collection)</mat-label>
+    <mat-select [value]="baseId" (selectionChange)="onEntityChange($event.value)">
+      @for (base of bases(); track base.id) {
+        <mat-option [value]="base.id">{{ base.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field dark-theme-field">
+    <mat-label>Search Data</mat-label>
+    <input matInput placeholder="Keyword..." [formControl]="searchControl">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+</mat-toolbar>
+
+<div class="content-container">
+  @if (isLoading()) {
+    <div class="center-content"><mat-spinner></mat-spinner><p>Loading data...</p></div>
+  } @else if (rowData().length === 0) {
+    <div class="center-content empty-state">
+      <mat-icon>inbox</mat-icon>
+      <h3>No Records Available</h3>
+      <p>We couldn't find any synced data for this base.</p>
+      <button mat-raised-button color="accent" (click)="syncCurrentBase()" [disabled]="isSyncing()">
+        @if (isSyncing()) { Syncing... } @else { Sync Now }
+      </button>
+    </div>
+  } @else {
+    <div class="grid-header">
+      <h3>Tickets Data</h3>
+      <button mat-stroked-button color="primary" (click)="syncCurrentBase()" [disabled]="isSyncing()">
+        <mat-icon>refresh</mat-icon> @if (isSyncing()) { Syncing... } @else { Resync Data }
+      </button>
+    </div>
+    <div class="grid-wrapper">
+      <ag-grid-angular
+        class="ag-theme-alpine custom-grid"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs()"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        (gridReady)="onGridReady($event)"
+        (cellClicked)="onCellClicked($event)">
+      </ag-grid-angular>
+    </div>
+  }
+</div>

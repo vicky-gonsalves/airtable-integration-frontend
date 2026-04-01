@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Record Details</h2>
+<mat-dialog-content class="dialog-body">
+
+  <div class="section">
+    <h3>Current Data</h3>
+    <div class="data-grid">
+      @for (prop of data.ticket | keyvalue; track prop.key) {
+        @if (prop.key !== 'actions' && prop.key !== 'fields') {
+          <div class="data-item">
+            <span class="label">{{ prop.key | titlecase }}:</span>
+            <span class="value">{{ prop.value | json }}</span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="section">
+    <h3>Revision History</h3>
+    @if (isLoadingRevisions()) {
+      <mat-spinner diameter="30"></mat-spinner>
+    } @else if (revisions().length === 0) {
+      <p class="text-muted">No revisions found for this record.</p>
+    } @else {
+      <ul class="revision-list">
+        @for (rev of revisions(); track rev.id) {
+          <li>
+            <strong>{{ rev.createdTime | date:'short' }}</strong> -
+            Changed by {{ rev.author?.name || 'System' }}:
+            <pre class="rev-details">{{ rev.changes | json }}</pre>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

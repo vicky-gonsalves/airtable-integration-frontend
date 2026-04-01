@@ -1,0 +1,26 @@
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.login-card {
+  width: 400px;
+  text-align: center;
+  padding: 24px;
+
+  mat-card-header {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+}
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.error-msg {
+  margin-bottom: 24px;
+  color: var(--mat-sys-on-surface-variant, #666);
+}
