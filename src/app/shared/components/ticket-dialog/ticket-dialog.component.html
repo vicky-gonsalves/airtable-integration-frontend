@@ -8,7 +8,7 @@
           @for (prop of data.ticket | keyvalue; track prop.key) {
             @if (prop.key !== 'actions' && prop.key !== 'fields') {
               <div class="data-item">
-                <span class="label">{{ prop.key | titlecase }}:</span>
+                <span class="label">{{ prop.key }}:</span>
                 <span class="value">{{ prop.value | json }}</span>
               </div>
             }
