@@ -61,6 +61,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   bases = this.workspaceState.bases;
   columnDefs = signal<ColDef[]>([]);
   isSyncing = signal(false);
+  totalRows = signal<number>(0);
 
   searchControl = this.fb.control('');
 
@@ -149,6 +150,8 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
               ...item,
               ...(item.fields || {}),
             }));
+
+            this.totalRows.set(response.total || 0);
 
             if (this.isFirstLoad) {
               this.setupColumns(flatData);

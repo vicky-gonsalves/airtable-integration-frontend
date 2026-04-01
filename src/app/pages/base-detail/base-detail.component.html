@@ -45,7 +45,7 @@
       </button>
     </div>
 
-    <div class="grid-wrapper">
+    <div class="grid-wrapper" style="display: flex; flex-direction: column; height: 100%;">
       <ag-grid-angular
         style="flex: 1"
         class="ag-theme-alpine custom-grid"
@@ -58,6 +58,10 @@
         (cellClicked)="onCellClicked($event)"
       >
       </ag-grid-angular>
+
+      <div class="grid-footer">
+        <span>Total Rows: {{ totalRows() }}</span>
+      </div>
     </div>
   }
 </div>
