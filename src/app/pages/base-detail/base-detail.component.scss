@@ -192,12 +192,3 @@
     transform: scale(1);
   }
 }
-
-::ng-deep .ag-theme-alpine {
-  --ag-border-color: transparent;
-  --ag-header-background-color: #f8fafc;
-  --ag-header-foreground-color: #475569;
-  --ag-row-border-color: #f1f5f9;
-  --ag-row-hover-color: #f8fafc;
-  --ag-selected-row-background-color: #eff6ff;
-}

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Authentication Required</h2>
+<mat-dialog-content>
+  <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+    <mat-icon color="warn" style="transform: scale(1.5);">error_outline</mat-icon>
+    <p style="margin: 0; line-height: 1.5;">
+      Your session has expired or your Airtable credentials are invalid. <br>
+      Please log in again to continue.
+    </p>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" (click)="goToLogin()">
+    <mat-icon>login</mat-icon> Go to Login
+  </button>
+</mat-dialog-actions>
