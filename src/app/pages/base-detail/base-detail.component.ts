@@ -25,6 +25,7 @@ import {
 } from 'ag-grid-community';
 import { TicketDialogComponent } from 'src/app/shared/components/ticket-dialog/ticket-dialog.component';
 import { WorkspaceStateService } from 'src/app/shared/services/workspace-state/workspace-state.service';
+import { AirtableGridFilterUtil } from 'src/app/shared/utils/airtable-grid-filter.util';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -125,7 +126,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
 
           const filterModel = params.filterModel;
           if (Object.keys(filterModel).length > 0) {
-            formula = this.convertGridFiltersToFormula(filterModel);
+            formula = AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel);
           } else {
             formula = '';
           }
@@ -158,6 +159,12 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
                     defaultState: { sort: null },
                   });
                 }
+
+                if (formula) {
+                  const filterModel = AirtableGridFilterUtil.parseFormulaToFilterModel(formula);
+                  this.gridApi.setFilterModel(filterModel);
+                }
+
                 const urlPage = Number(this.initialUrlParams['page']);
                 if (urlPage && urlPage > 0) this.gridApi.paginationGoToPage(urlPage);
               }, 0);
@@ -173,60 +180,6 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         });
       },
     };
-  }
-
-  convertGridFiltersToFormula(filterModel: any): string {
-    const conditions: string[] = [];
-
-    for (const [key, fObj] of Object.entries<any>(filterModel)) {
-      if (fObj.operator) {
-        let innerConds: string[] = [];
-        if (Array.isArray(fObj.conditions)) {
-          innerConds = fObj.conditions
-            .map((c: any) => this.getConditionString(key, c))
-            .filter((c: string) => c);
-        } else {
-          const c1 = this.getConditionString(key, fObj.condition1);
-          const c2 = this.getConditionString(key, fObj.condition2);
-          if (c1) innerConds.push(c1);
-          if (c2) innerConds.push(c2);
-        }
-        if (innerConds.length > 0) {
-          conditions.push(`${fObj.operator}(${innerConds.join(', ')})`);
-        }
-      } else {
-        const c = this.getConditionString(key, fObj);
-        if (c) conditions.push(c);
-      }
-    }
-
-    if (conditions.length === 0) return '';
-    if (conditions.length === 1) return conditions[0];
-    return `AND(${conditions.join(', ')})`;
-  }
-
-  getConditionString(field: string, fObj: any): string {
-    const val = fObj.filter;
-    switch (fObj.type) {
-      case 'contains':
-        return `FIND('${val}', {${field}})`;
-      case 'notContains':
-        return `NOT(FIND('${val}', {${field}}))`;
-      case 'equals':
-        return `{${field}} = '${val}'`;
-      case 'notEqual':
-        return `{${field}} != '${val}'`;
-      case 'startsWith':
-        return `FIND('${val}', {${field}}) = 1`;
-      case 'endsWith':
-        return `SEARCH('${val}', {${field}})`;
-      case 'blank':
-        return `{${field}} = BLANK()`;
-      case 'notBlank':
-        return `{${field}} != BLANK()`;
-      default:
-        return '';
-    }
   }
 
   setupColumns(data: any[]) {
@@ -264,7 +217,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         sortable: true,
         filter: 'agTextColumnFilter',
         floatingFilter: false,
-        filterParams: { buttons: ['reset'], debounceMs: 600 },
+        filterParams: { buttons: ['reset'], debounceMs: 600, maxNumConditions: 10 },
       })),
     ];
     this.columnDefs.set(cols);
