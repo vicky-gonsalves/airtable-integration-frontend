@@ -19,7 +19,7 @@ import {
   ModuleRegistry,
   CellClickedEvent,
 } from 'ag-grid-community';
-import { TicketDialogComponent } from 'src/app/ticket-dialog/ticket-dialog.component';
+import { TicketDialogComponent } from 'src/app/shared/components/ticket-dialog/ticket-dialog.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
