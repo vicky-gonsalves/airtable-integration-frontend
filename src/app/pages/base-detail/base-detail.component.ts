@@ -239,7 +239,8 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     const target = event.event?.target as HTMLElement;
     if (target && target.closest('.hover-expand-btn')) {
       this.dialog.open(TicketDialogComponent, {
-        width: '800px',
+        width: '1000px',
+        maxWidth: '90vw',
         data: { ticket: event.data },
       });
     }
