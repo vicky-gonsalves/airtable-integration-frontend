@@ -35,10 +35,12 @@ export class AirtableService {
     return this.http.post(`${this.apiUrl}/sync`, { baseId, tableId }, { withCredentials: true });
   }
 
-  getData(endpoint: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${endpoint}`, { withCredentials: true });
+  getData(endpoint: string, options: any = {}): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${endpoint}`, {
+      ...options,
+      withCredentials: true,
+    });
   }
-
   getRevisions(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/revisions`, { withCredentials: true });
   }

@@ -44,6 +44,9 @@
 .grid-wrapper {
   flex: 1;
   min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .custom-grid {
   width: 100%;
@@ -75,7 +78,7 @@
   cursor: pointer;
   color: var(--mat-sys-on-surface-variant, #555);
   padding: 0;
-  box-shadow: var(--mat-sys-level1, 0 1px 2px rgba(0,0,0,0.05));
+  box-shadow: var(--mat-sys-level1, 0 1px 2px rgba(0, 0, 0, 0.05));
 }
 
 ::ng-deep .hover-expand-btn:hover {
