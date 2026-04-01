@@ -66,7 +66,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
 
   currentBaseName = computed(() => {
     const activeBase = this.bases().find((b) => b.id === this.baseId);
-    return activeBase ? activeBase.name : 'Tickets';
+    return activeBase ? activeBase.name : 'Workspace';
   });
 
   tables = computed(() => {
@@ -76,18 +76,20 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   columnDefs = signal<ColDef[]>([]);
   isSyncing = signal(false);
   totalRows = signal<number>(0);
+  isLoadingData = signal<boolean>(true);
 
   searchControl = this.fb.control('');
 
   private gridApi!: GridApi;
-  private isFirstLoad = true;
-  private initialUrlParams: any = {};
+
+  private lastFetchParams: string | null = null;
+  private lastFetchResponse: { data: any[]; total: number } | null = null;
 
   ngOnInit() {
     this.workspaceState.loadBases();
-    this.initialUrlParams = this.route.snapshot.queryParams;
 
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const prevBaseId = this.baseId;
       const prevTableId = this.tableId;
       this.baseId = params.get('baseId') || '';
       this.tableId = params.get('tableId') || '';
@@ -99,13 +101,12 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
               replaceUrl: true,
               queryParamsHandling: 'merge',
             });
-          } else if (
-            this.tableId &&
-            this.tableId !== prevTableId &&
-            this.gridApi &&
-            !this.isFirstLoad
-          ) {
-            this.gridApi.setGridOption('datasource', this.createDatasource());
+          } else if (this.tableId && (this.tableId !== prevTableId || this.baseId !== prevBaseId)) {
+            this.resetGridState();
+
+            if (this.gridApi) {
+              this.loadTableData();
+            }
           }
         });
       }
@@ -114,7 +115,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     this.searchControl.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((text) => {
-        if (!this.isFirstLoad && this.gridApi) {
+        if (this.gridApi) {
           this.updateUrlParams({ search: text || null, page: 0 });
           this.gridApi.setGridOption('datasource', this.createDatasource());
         }
@@ -124,6 +125,15 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private resetGridState() {
+    this.columnDefs.set([]);
+    this.totalRows.set(0);
+    this.isLoadingData.set(true);
+    this.lastFetchParams = null;
+    this.lastFetchResponse = null;
+    this.searchControl.setValue('', { emitEvent: false });
   }
 
   updateUrlParams(newParams: any) {
@@ -136,7 +146,84 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
-    this.gridApi.setGridOption('datasource', this.createDatasource());
+    if (this.tableId) {
+      this.loadTableData();
+    }
+  }
+
+  private loadTableData() {
+    if (!this.tableId || !this.gridApi) return;
+
+    this.isLoadingData.set(true);
+
+    const queryParams = this.route.snapshot.queryParams;
+    const page = Number(queryParams['page']) || 0;
+    const limit = Number(queryParams['limit']) || 20;
+    const search = queryParams['search'] || '';
+    const sortBy = queryParams['sortBy'] || '';
+    const sortOrder = queryParams['sortOrder'] || '';
+    const formula = queryParams['formula'] || '';
+
+    if (search && this.searchControl.value !== search) {
+      this.searchControl.setValue(search, { emitEvent: false });
+    }
+
+    const initialParams = {
+      baseId: this.baseId,
+      tableId: this.tableId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      search,
+      formula,
+    };
+
+    this.airtable.getData('tickets', { params: initialParams }).subscribe({
+      next: (response: any) => {
+        const flatData = response.data.map((item: any) => ({
+          ...item,
+          ...(item.fields || {}),
+        }));
+        this.totalRows.set(response.total || 0);
+
+        this.lastFetchParams = JSON.stringify(initialParams);
+        this.lastFetchResponse = { data: flatData, total: response.total };
+
+        this.setupColumns(flatData);
+
+        setTimeout(() => {
+          if (initialParams.sortBy && initialParams.sortOrder) {
+            this.gridApi.applyColumnState({
+              state: [{ colId: initialParams.sortBy, sort: initialParams.sortOrder as any }],
+            });
+          } else {
+            this.gridApi.applyColumnState({ defaultState: { sort: null } });
+          }
+
+          if (initialParams.formula) {
+            const filterModel = AirtableGridFilterUtil.parseFormulaToFilterModel(
+              initialParams.formula,
+            );
+            this.gridApi.setFilterModel(filterModel);
+          } else {
+            this.gridApi.setFilterModel(null);
+          }
+
+          this.gridApi.setGridOption('datasource', this.createDatasource());
+
+          if (page > 0) {
+            setTimeout(() => this.gridApi.paginationGoToPage(page), 50);
+          }
+
+          this.isLoadingData.set(false);
+        }, 0);
+      },
+      error: () => {
+        this.snackBar.open('Failed to load table data', 'Close', { duration: 3000 });
+        this.isLoadingData.set(false);
+      },
+    });
   }
 
   createDatasource(): IDatasource {
@@ -147,35 +234,28 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
 
         let sortBy = '',
           sortOrder = '',
-          formula = '',
-          search: string;
+          formula = '';
 
-        if (this.isFirstLoad) {
-          sortBy = this.initialUrlParams['sortBy'] || '';
-          sortOrder = this.initialUrlParams['sortOrder'] || '';
-          formula = this.initialUrlParams['formula'] || '';
-          search = this.initialUrlParams['search'] || '';
-          if (search) this.searchControl.setValue(search, { emitEvent: false });
-        } else {
-          if (params.sortModel && params.sortModel.length > 0) {
-            sortBy = params.sortModel[0].colId;
-            sortOrder = params.sortModel[0].sort;
-          }
-          const filterModel = params.filterModel;
-          formula =
-            Object.keys(filterModel).length > 0
-              ? AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel)
-              : '';
-
-          search = this.searchControl.value || '';
-          this.updateUrlParams({
-            page,
-            limit,
-            sortBy: sortBy || null,
-            sortOrder: sortOrder || null,
-            formula: formula || null,
-          });
+        if (params.sortModel && params.sortModel.length > 0) {
+          sortBy = params.sortModel[0].colId;
+          sortOrder = params.sortModel[0].sort;
         }
+
+        const filterModel = params.filterModel;
+        formula =
+          Object.keys(filterModel).length > 0
+            ? AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel)
+            : '';
+
+        const search = this.searchControl.value || '';
+
+        this.updateUrlParams({
+          page,
+          limit,
+          sortBy: sortBy || null,
+          sortOrder: sortOrder || null,
+          formula: formula || null,
+        });
 
         const apiParams = {
           baseId: this.baseId,
@@ -188,37 +268,29 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
           formula,
         };
 
+        const cacheKey = JSON.stringify(apiParams);
+
+        if (this.lastFetchParams === cacheKey && this.lastFetchResponse) {
+          params.successCallback(this.lastFetchResponse.data, this.lastFetchResponse.total);
+          return;
+        }
+
         this.airtable.getData('tickets', { params: apiParams }).subscribe({
           next: (response: any) => {
             const flatData = response.data.map((item: any) => ({
               ...item,
               ...(item.fields || {}),
             }));
+
             this.totalRows.set(response.total || 0);
 
-            if (this.isFirstLoad) {
-              this.setupColumns(flatData);
-              setTimeout(() => {
-                if (sortBy && sortOrder) {
-                  this.gridApi.applyColumnState({
-                    state: [{ colId: sortBy, sort: sortOrder as any }],
-                    defaultState: { sort: null },
-                  });
-                }
-                if (formula) {
-                  const filterModel = AirtableGridFilterUtil.parseFormulaToFilterModel(formula);
-                  this.gridApi.setFilterModel(filterModel);
-                }
-                const urlPage = Number(this.initialUrlParams['page']);
-                if (urlPage && urlPage > 0) this.gridApi.paginationGoToPage(urlPage);
-              }, 0);
-              this.isFirstLoad = false;
-            }
+            this.lastFetchParams = cacheKey;
+            this.lastFetchResponse = { data: flatData, total: response.total };
 
             params.successCallback(flatData, response.total);
           },
           error: () => {
-            this.snackBar.open('Failed to load tickets', 'Close', { duration: 3000 });
+            this.snackBar.open('Failed to load table data', 'Close', { duration: 3000 });
             params.failCallback();
           },
         });
@@ -227,7 +299,12 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   }
 
   setupColumns(data: any[]) {
-    if (!data.length) return;
+    if (!data || !data.length) {
+      this.columnDefs.set([]);
+      if (this.gridApi) this.gridApi.setGridOption('columnDefs', []);
+      return;
+    }
+
     const allKeys = new Set<string>();
     data.forEach((row) => {
       Object.keys(row).forEach((key) => {
@@ -273,11 +350,15 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   }
 
   onBaseChange(newBaseId: string) {
-    this.router.navigate(['/workspaces', newBaseId]);
+    this.router.navigate(['/workspaces', newBaseId], {
+      queryParams: { page: null, sortBy: null, sortOrder: null, formula: null, search: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   onEntityChange(newTableId: string) {
     this.router.navigate(['/workspaces', this.baseId, newTableId], {
+      queryParams: { page: null, sortBy: null, sortOrder: null, formula: null, search: null },
       queryParamsHandling: 'merge',
     });
   }
@@ -291,6 +372,9 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         this.snackBar.open('Sync successful!', 'Close', { duration: 2000 });
         this.isSyncing.set(false);
         if (this.gridApi) {
+          this.isLoadingData.set(true);
+          this.lastFetchParams = null;
+          this.lastFetchResponse = null;
           this.gridApi.setGridOption('datasource', this.createDatasource());
         }
       },
@@ -330,6 +414,9 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
           });
           this.isSyncing.set(false);
           if (this.gridApi) {
+            this.isLoadingData.set(true);
+            this.lastFetchParams = null;
+            this.lastFetchResponse = null;
             this.gridApi.setGridOption('datasource', this.createDatasource());
           }
         }

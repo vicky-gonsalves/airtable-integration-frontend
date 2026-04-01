@@ -54,7 +54,7 @@
           mat-stroked-button
           color="accent"
           (click)="syncRevisionHistory()"
-          [disabled]="isSyncing()"
+          [disabled]="isSyncing() || !tableId"
         >
           <mat-icon>history</mat-icon> Resync Revision History
         </button>
@@ -62,14 +62,15 @@
           mat-stroked-button
           color="primary"
           (click)="syncCurrentBase()"
-          [disabled]="isSyncing()"
+          [disabled]="isSyncing() || !tableId"
         >
           <mat-icon>refresh</mat-icon> Resync Data
         </button>
       </div>
     </div>
 
-    <div class="grid-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+    <div class="grid-wrapper" style="display: flex; flex-direction: column; height: 100%; position: relative;">
+
       <ag-grid-angular
         style="flex: 1"
         class="ag-theme-alpine custom-grid"
@@ -82,6 +83,17 @@
         (cellClicked)="onCellClicked($event)"
       >
       </ag-grid-angular>
+
+      @if (totalRows() === 0 && !isLoadingData()) {
+        <div class="empty-overlay">
+          <mat-icon>table_rows</mat-icon>
+          <h3>No Data Available</h3>
+          <p>There are currently no records synced for this table.</p>
+          <button mat-flat-button color="primary" (click)="syncCurrentBase()">
+            <mat-icon>sync</mat-icon> Sync Data
+          </button>
+        </div>
+      }
 
       <div class="grid-footer">
         <span>Total Rows: {{ totalRows() }}</span>

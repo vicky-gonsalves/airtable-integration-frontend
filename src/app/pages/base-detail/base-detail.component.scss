@@ -81,6 +81,44 @@
   border: 1px solid #e2e8f0;
 }
 
+.empty-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 49px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+
+  mat-icon:not(.mat-icon-button mat-icon) {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}
+
 .custom-grid {
   width: 100%;
   flex: 1;
