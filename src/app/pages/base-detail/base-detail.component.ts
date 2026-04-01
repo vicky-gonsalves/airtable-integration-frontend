@@ -332,8 +332,27 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         filter: 'agTextColumnFilter',
         floatingFilter: false,
         filterParams: { buttons: ['reset'], debounceMs: 600, maxNumConditions: 10 },
+
+        valueFormatter: (params: any) => {
+          const val = params.value;
+
+          if (!val) return '';
+
+          if (Array.isArray(val)) {
+            return val
+              .map((v) => (v && typeof v === 'object' ? v.name || v.email || JSON.stringify(v) : v))
+              .join(', ');
+          }
+
+          if (typeof val === 'object') {
+            return val.name || val.email || JSON.stringify(val);
+          }
+
+          return val;
+        },
       })),
     ];
+
     this.columnDefs.set(cols);
     if (this.gridApi) this.gridApi.setGridOption('columnDefs', cols);
   }
