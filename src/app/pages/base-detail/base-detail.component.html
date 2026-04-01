@@ -82,13 +82,9 @@
       </div>
     </div>
 
-    <div
-      class="grid-wrapper"
-      style="display: flex; flex-direction: column; height: 100%; position: relative"
-    >
+    <div class="grid-wrapper">
       <ag-grid-angular
-        style="flex: 1"
-        class="ag-theme-alpine custom-grid"
+        class="custom-grid"
         [columnDefs]="columnDefs()"
         [rowModelType]="'infinite'"
         [pagination]="true"
@@ -96,9 +92,7 @@
         [cacheBlockSize]="20"
         (gridReady)="onGridReady($event)"
         (cellClicked)="onCellClicked($event)"
-      >
-      </ag-grid-angular>
-
+      />
       @if (totalRows() === 0 && !isLoadingData()) {
         <div class="empty-overlay">
           @if (hasActiveFilters()) {

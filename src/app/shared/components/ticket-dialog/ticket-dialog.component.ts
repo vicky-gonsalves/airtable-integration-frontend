@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DatePipe, JsonPipe, KeyValuePipe, TitleCasePipe } from '@angular/common';
+import { DatePipe, JsonPipe, KeyValuePipe } from '@angular/common';
 
 @Component({
   selector: 'app-ticket-dialog',
@@ -16,7 +16,6 @@ import { DatePipe, JsonPipe, KeyValuePipe, TitleCasePipe } from '@angular/common
     MatProgressSpinnerModule,
     KeyValuePipe,
     DatePipe,
-    TitleCasePipe,
     JsonPipe,
   ],
   templateUrl: './ticket-dialog.component.html',
