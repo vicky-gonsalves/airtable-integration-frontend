@@ -110,7 +110,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         let sortBy = '',
           sortOrder = '',
           formula = '',
-          search = '';
+          search: string;
 
         if (this.isFirstLoad) {
           sortBy = this.initialUrlParams['sortBy'] || '';

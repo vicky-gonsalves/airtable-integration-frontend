@@ -36,7 +36,7 @@ export class AirtableGridFilterUtil {
 
     if (formula.startsWith('NOT(') && formula.endsWith(')')) {
       const inner = formula.substring(4, formula.length - 1).trim();
-      const findMatch = inner.match(/^FIND\(['"]([^'"]+)['"],\s*\{([^}]+)\}\)$/);
+      const findMatch = inner.match(/^FIND\(['"]([^'"]+)['"],\s*\{([^}]+)}\)$/);
       if (findMatch) {
         AirtableGridFilterUtil.addCondition(
           findMatch[2],
@@ -57,7 +57,7 @@ export class AirtableGridFilterUtil {
     }
 
     const findMatch = formula.match(
-      /^(FIND|SEARCH)\(['"]([^'"]+)['"],\s*\{([^}]+)\}\)(?:\s*=\s*1)?$/,
+      /^(FIND|SEARCH)\(['"]([^'"]+)['"],\s*\{([^}]+)}\)(?:\s*=\s*1)?$/,
     );
     if (findMatch) {
       const func = findMatch[1];
@@ -77,7 +77,7 @@ export class AirtableGridFilterUtil {
       return;
     }
 
-    const opMatch = formula.match(/^\{([^}]+)\}\s*(=|!=|>|<|>=|<=)\s*(.+)$/);
+    const opMatch = formula.match(/^\{([^}]+)}\s*(=|!=|>|<|>=|<=)\s*(.+)$/);
     if (opMatch) {
       const field = opMatch[1].trim();
       const op = opMatch[2].trim();
