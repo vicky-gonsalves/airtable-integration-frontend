@@ -1,5 +1,5 @@
 <mat-toolbar color="primary" class="toolbar">
-  <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces" >
+  <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces">
     <mat-icon>arrow_back</mat-icon>
   </button>
   <span>Workspaces</span>
@@ -7,7 +7,11 @@
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
     <mat-label>Workspace</mat-label>
-    <mat-select [value]="baseId" (selectionChange)="onBaseChange($event.value)" [disabled]="!isLoaded()">
+    <mat-select
+      [value]="baseId"
+      (selectionChange)="onBaseChange($event.value)"
+      [disabled]="!isLoaded()"
+    >
       @for (base of bases(); track base.id) {
         <mat-option [value]="base.id">{{ base.name }}</mat-option>
       }
@@ -16,7 +20,11 @@
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
     <mat-label>Entity (Collection)</mat-label>
-    <mat-select [value]="tableId" (selectionChange)="onEntityChange($event.value)" [disabled]="tables().length === 0">
+    <mat-select
+      [value]="tableId"
+      (selectionChange)="onEntityChange($event.value)"
+      [disabled]="tables().length === 0"
+    >
       @for (table of tables(); track table.id) {
         <mat-option [value]="table.id">{{ table.name }}</mat-option>
       }
@@ -32,7 +40,12 @@
     <input matInput placeholder="Keyword..." [formControl]="searchControl" />
 
     @if (searchControl.value) {
-      <button mat-icon-button matSuffix (click)="searchControl.setValue('')" aria-label="Clear search">
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="searchControl.setValue('')"
+        aria-label="Clear search"
+      >
         <mat-icon>close</mat-icon>
       </button>
     } @else {
@@ -49,7 +62,7 @@
   } @else {
     <div class="grid-header">
       <h3>{{ currentBaseName() }}</h3>
-      <div style="display: flex; gap: 12px;">
+      <div style="display: flex; gap: 12px">
         <button
           mat-stroked-button
           color="accent"
@@ -69,8 +82,10 @@
       </div>
     </div>
 
-    <div class="grid-wrapper" style="display: flex; flex-direction: column; height: 100%; position: relative;">
-
+    <div
+      class="grid-wrapper"
+      style="display: flex; flex-direction: column; height: 100%; position: relative"
+    >
       <ag-grid-angular
         style="flex: 1"
         class="ag-theme-alpine custom-grid"
@@ -86,12 +101,21 @@
 
       @if (totalRows() === 0 && !isLoadingData()) {
         <div class="empty-overlay">
-          <mat-icon>table_rows</mat-icon>
-          <h3>No Data Available</h3>
-          <p>There are currently no records synced for this table.</p>
-          <button mat-flat-button color="primary" (click)="syncCurrentBase()">
-            <mat-icon>sync</mat-icon> Sync Data
-          </button>
+          @if (hasActiveFilters()) {
+            <mat-icon>filter_alt_off</mat-icon>
+            <h3>No matches found</h3>
+            <p>We couldn't find any records matching your current search or filters.</p>
+            <button mat-flat-button color="primary" (click)="clearFilters()">
+              <mat-icon>clear_all</mat-icon> Clear Filters
+            </button>
+          } @else {
+            <mat-icon>table_rows</mat-icon>
+            <h3>No Data Available</h3>
+            <p>There are currently no records synced for this table.</p>
+            <button mat-flat-button color="primary" (click)="syncCurrentBase()">
+              <mat-icon>sync</mat-icon> Sync Data
+            </button>
+          }
         </div>
       }
 

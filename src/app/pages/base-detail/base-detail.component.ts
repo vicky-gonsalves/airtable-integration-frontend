@@ -77,6 +77,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   isSyncing = signal(false);
   totalRows = signal<number>(0);
   isLoadingData = signal<boolean>(true);
+  hasActiveFilters = signal<boolean>(false);
 
   searchControl = this.fb.control('');
 
@@ -131,6 +132,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     this.columnDefs.set([]);
     this.totalRows.set(0);
     this.isLoadingData.set(true);
+    this.hasActiveFilters.set(false);
     this.lastFetchParams = null;
     this.lastFetchResponse = null;
     this.searchControl.setValue('', { emitEvent: false });
@@ -163,6 +165,8 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     const sortBy = queryParams['sortBy'] || '';
     const sortOrder = queryParams['sortOrder'] || '';
     const formula = queryParams['formula'] || '';
+
+    this.hasActiveFilters.set(!!search || !!formula);
 
     if (search && this.searchControl.value !== search) {
       this.searchControl.setValue(search, { emitEvent: false });
@@ -210,14 +214,14 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
             this.gridApi.setFilterModel(null);
           }
 
-          this.gridApi.setGridOption('datasource', this.createDatasource());
+          this.gridApi.setGridOption('datasource', this.createDatasource(initialParams));
 
           if (page > 0) {
             setTimeout(() => this.gridApi.paginationGoToPage(page), 50);
           }
 
           this.isLoadingData.set(false);
-        }, 0);
+        }, 50);
       },
       error: () => {
         this.snackBar.open('Failed to load table data', 'Close', { duration: 3000 });
@@ -226,36 +230,49 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  createDatasource(): IDatasource {
+  createDatasource(initialState?: any): IDatasource {
+    let isFirstCall = !!initialState;
+
     return {
       getRows: (params: IGetRowsParams) => {
         const limit = params.endRow - params.startRow;
         const page = Math.floor(params.startRow / limit);
 
-        let sortBy = '',
-          sortOrder = '',
-          formula = '';
+        let sortBy = '';
+        let sortOrder = '';
+        let formula = '';
+        let search = '';
 
-        if (params.sortModel && params.sortModel.length > 0) {
-          sortBy = params.sortModel[0].colId;
-          sortOrder = params.sortModel[0].sort;
+        if (isFirstCall) {
+          sortBy = initialState.sortBy;
+          sortOrder = initialState.sortOrder;
+          formula = initialState.formula;
+          search = initialState.search;
+          isFirstCall = false;
+        } else {
+          if (params.sortModel && params.sortModel.length > 0) {
+            sortBy = params.sortModel[0].colId;
+            sortOrder = params.sortModel[0].sort;
+          }
+
+          const filterModel = params.filterModel;
+          formula =
+            Object.keys(filterModel).length > 0
+              ? AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel)
+              : '';
+
+          search = this.searchControl.value || '';
+
+          this.hasActiveFilters.set(!!search || !!formula);
+
+          this.updateUrlParams({
+            page,
+            limit,
+            sortBy: sortBy || null,
+            sortOrder: sortOrder || null,
+            formula: formula || null,
+          });
         }
-
-        const filterModel = params.filterModel;
-        formula =
-          Object.keys(filterModel).length > 0
-            ? AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel)
-            : '';
-
-        const search = this.searchControl.value || '';
-
-        this.updateUrlParams({
-          page,
-          limit,
-          sortBy: sortBy || null,
-          sortOrder: sortOrder || null,
-          formula: formula || null,
-        });
 
         const apiParams = {
           baseId: this.baseId,
@@ -283,6 +300,9 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
             }));
 
             this.totalRows.set(response.total || 0);
+            if (this.columnDefs().length === 0 && flatData.length > 0) {
+              this.setupColumns(flatData);
+            }
 
             this.lastFetchParams = cacheKey;
             this.lastFetchResponse = { data: flatData, total: response.total };
@@ -300,8 +320,10 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
 
   setupColumns(data: any[]) {
     if (!data || !data.length) {
-      this.columnDefs.set([]);
-      if (this.gridApi) this.gridApi.setGridOption('columnDefs', []);
+      if (!this.hasActiveFilters()) {
+        this.columnDefs.set([]);
+        if (this.gridApi) this.gridApi.setGridOption('columnDefs', []);
+      }
       return;
     }
 
@@ -365,6 +387,20 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         maxWidth: '90vw',
         data: { ticket: event.data },
       });
+    }
+  }
+
+  clearFilters() {
+    this.searchControl.setValue('', { emitEvent: false });
+    this.hasActiveFilters.set(false);
+    this.updateUrlParams({ search: null, formula: null, page: 0 });
+
+    if (this.gridApi) {
+      this.gridApi.setFilterModel(null);
+
+      setTimeout(() => {
+        this.gridApi.setGridOption('datasource', this.createDatasource());
+      }, 50);
     }
   }
 
