@@ -11,7 +11,7 @@
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
     <mat-label>Entity (Collection)</mat-label>
-    <mat-select [value]="baseId" (selectionChange)="onEntityChange($event.value)">
+    <mat-select [value]="baseId" (selectionChange)="onEntityChange($event.value)" [disabled]="!isLoaded()">
       @for (base of bases(); track base.id) {
         <mat-option [value]="base.id">{{ base.name }}</mat-option>
       }
@@ -37,11 +37,13 @@
 </mat-toolbar>
 
 <div class="content-container">
-  @if (isSyncing()) {
+  @if (!isLoaded()) {
+    <div class="center-content"><mat-spinner></mat-spinner><p>Loading workspace...</p></div>
+  } @else if (isSyncing()) {
     <div class="center-content"><mat-spinner></mat-spinner><p>Syncing data...</p></div>
   } @else {
     <div class="grid-header">
-      <h3>Tickets Data</h3>
+      <h3>{{ currentBaseName() }}</h3>
       <button
         mat-stroked-button
         color="primary"

@@ -17,6 +17,7 @@ export class WorkspaceStateService {
 
   public readonly bases = this._bases.asReadonly();
   public readonly isLoading = this._isLoading.asReadonly();
+  public readonly isLoaded = this._isLoaded.asReadonly();
 
   loadBases() {
     if (this._isLoaded() || this._isLoading()) {

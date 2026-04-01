@@ -1,4 +1,4 @@
-import { Component, inject, Input, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, Input, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AirtableService } from 'src/app/shared/services/airtable/airtable.service';
@@ -59,6 +59,13 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   bases = this.workspaceState.bases;
+  isLoaded = this.workspaceState.isLoaded;
+
+  currentBaseName = computed(() => {
+    const activeBase = this.bases().find((b) => b.id === this.baseId);
+    return activeBase ? activeBase.name : 'Tickets';
+  });
+
   columnDefs = signal<ColDef[]>([]);
   isSyncing = signal(false);
   totalRows = signal<number>(0);
