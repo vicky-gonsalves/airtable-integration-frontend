@@ -341,7 +341,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     const allKeys = new Set<string>();
     data.forEach((row) => {
       Object.keys(row).forEach((key) => {
-        if (!['fields', 'createdTime', '_id', '__v', 'baseId', 'tableId'].includes(key)) {
+        if (!['fields', '_id', '__v', 'baseId', 'tableId'].includes(key)) {
           allKeys.add(key);
         }
       });
@@ -360,7 +360,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
       },
       ...Array.from(allKeys).map((key) => ({
         field: key,
-        headerName: key.toUpperCase(),
+        headerName: key,
         sortable: true,
         filter: 'agTextColumnFilter',
         floatingFilter: false,
