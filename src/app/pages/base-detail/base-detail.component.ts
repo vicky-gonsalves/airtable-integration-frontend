@@ -2,7 +2,7 @@ import { Component, inject, Input, signal, computed, OnInit, OnDestroy } from '@
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AirtableService } from 'src/app/shared/services/airtable/airtable.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -42,6 +42,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     AgGridModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    RouterModule,
   ],
   templateUrl: './base-detail.component.html',
   styleUrl: './base-detail.component.scss',
