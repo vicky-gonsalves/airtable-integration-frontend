@@ -6,7 +6,7 @@
   <span class="spacer"></span>
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-    <mat-label>Workspace</mat-label>
+    <mat-label>Active Integrations</mat-label>
     <mat-select
       [value]="baseId"
       (selectionChange)="onBaseChange($event.value)"
@@ -19,7 +19,7 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-    <mat-label>Entity (Collection)</mat-label>
+    <mat-label>Entity</mat-label>
     <mat-select
       [value]="tableId"
       (selectionChange)="onEntityChange($event.value)"
@@ -61,7 +61,7 @@
     <div class="center-content"><mat-spinner></mat-spinner><p>Syncing data...</p></div>
   } @else {
     <div class="grid-header">
-      <h3>{{ currentBaseName() }}</h3>
+      <h3>{{ currentTableName() }}</h3>
       <div style="display: flex; gap: 12px">
         <button
           mat-stroked-button

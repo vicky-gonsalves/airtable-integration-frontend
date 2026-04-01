@@ -64,13 +64,21 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   bases = this.workspaceState.bases;
   isLoaded = this.workspaceState.isLoaded;
 
+  activeBaseId = signal<string>('');
+  activeTableId = signal<string>('');
+
   currentBaseName = computed(() => {
-    const activeBase = this.bases().find((b) => b.id === this.baseId);
+    const activeBase = this.bases().find((b) => b.id === this.activeBaseId());
     return activeBase ? activeBase.name : 'Workspace';
   });
 
   tables = computed(() => {
-    return this.workspaceState.tablesMap()[this.baseId] || [];
+    return this.workspaceState.tablesMap()[this.activeBaseId()] || [];
+  });
+
+  currentTableName = computed(() => {
+    const activeTable = this.tables().find((t) => t.id === this.activeTableId());
+    return activeTable ? activeTable.name : 'Collection';
   });
 
   columnDefs = signal<ColDef[]>([]);
@@ -94,6 +102,9 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
       const prevTableId = this.tableId;
       this.baseId = params.get('baseId') || '';
       this.tableId = params.get('tableId') || '';
+
+      this.activeBaseId.set(this.baseId);
+      this.activeTableId.set(this.tableId);
 
       if (this.baseId) {
         this.workspaceState.loadTables(this.baseId).subscribe((fetchedTables) => {
