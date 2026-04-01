@@ -21,6 +21,10 @@ export class AirtableService {
     return this.http.get<{ url: string }>(`${this.apiUrl}/auth/url`);
   }
 
+  logout(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true });
+  }
+
   getBases(): Observable<{ bases: any[] }> {
     return this.http.get<{ bases: any[] }>(`${this.apiUrl}/bases`, { withCredentials: true });
   }

@@ -1,6 +1,12 @@
 <mat-toolbar color="primary" class="app-toolbar">
   <mat-icon class="toolbar-icon">view_list</mat-icon>
   <span>My Airtable Workspaces</span>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button (click)="logout()" title="Logout" aria-label="Logout">
+    <mat-icon>logout</mat-icon>
+  </button>
 </mat-toolbar>
 
 <div class="workspace-container">
