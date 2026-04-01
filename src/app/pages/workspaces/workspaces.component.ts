@@ -1,11 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { AirtableService } from 'src/app/shared/services/airtable/airtable.service';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRipple } from '@angular/material/core';
+import { WorkspaceStateService } from 'src/app/shared/services/workspace-state/workspace-state.service';
 
 @Component({
   selector: 'app-workspaces',
@@ -15,20 +15,14 @@ import { MatRipple } from '@angular/material/core';
   styleUrl: './workspaces.component.scss',
 })
 export class WorkspacesComponent {
-  private airtableService = inject(AirtableService);
+  private workspaceState = inject(WorkspaceStateService);
   private router = inject(Router);
 
-  bases = signal<any[]>([]);
-  isLoading = signal(true);
+  bases = this.workspaceState.bases;
+  isLoading = this.workspaceState.isLoading;
 
   ngOnInit() {
-    this.airtableService.getBases().subscribe({
-      next: (res) => {
-        this.bases.set(res.bases);
-        this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false),
-    });
+    this.workspaceState.loadBases();
   }
 
   goToBase(baseId: string) {

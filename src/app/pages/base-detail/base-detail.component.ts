@@ -20,6 +20,7 @@ import {
   CellClickedEvent,
 } from 'ag-grid-community';
 import { TicketDialogComponent } from 'src/app/shared/components/ticket-dialog/ticket-dialog.component';
+import { WorkspaceStateService } from 'src/app/shared/services/workspace-state/workspace-state.service';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -48,8 +49,10 @@ export class BaseDetailComponent {
   private fb = inject(FormBuilder);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private workspaceState = inject(WorkspaceStateService);
 
-  bases = signal<any[]>([]);
+  bases = this.workspaceState.bases;
+
   rowData = signal<any[]>([]);
   columnDefs = signal<ColDef[]>([]);
   isLoading = signal(true);
@@ -59,7 +62,7 @@ export class BaseDetailComponent {
   private gridApi!: GridApi;
 
   ngOnInit() {
-    this.airtable.getBases().subscribe((res) => this.bases.set(res.bases));
+    this.workspaceState.loadBases();
     this.loadTickets();
     this.searchControl.valueChanges.subscribe((text) => {
       if (this.gridApi) this.gridApi.setGridOption('quickFilterText', text || '');
