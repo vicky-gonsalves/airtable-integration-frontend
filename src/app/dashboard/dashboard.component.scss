@@ -1,0 +1,100 @@
+.app-toolbar {
+  z-index: 10;
+  position: relative;
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+}
+
+.dashboard-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+
+.controls-card {
+  margin-bottom: 24px;
+
+  &.fetch-card {
+    margin-bottom: 16px;
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding-top: 16px;
+
+    .step-label {
+      font-weight: 500;
+      margin-right: 16px;
+    }
+
+    .load-btn {
+      margin-right: 16px;
+    }
+
+    .sync-btn {
+      height: 56px;
+      margin-bottom: 20px;
+    }
+
+    mat-form-field {
+      flex: 1;
+      margin-bottom: -1.25em;
+    }
+
+    .search-field {
+      flex: 2;
+    }
+  }
+}
+
+.content-split {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+
+  .mfa-card {
+    flex: 0 0 350px;
+
+    .mfa-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+
+      mat-form-field {
+        width: 100%;
+        margin-bottom: -1.25em;
+      }
+    }
+
+    .mfa-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .full-width {
+      width: 100%;
+      margin: 8px;
+    }
+  }
+
+  .grid-card {
+    flex: 1;
+    padding: 0;
+
+    mat-card-content {
+      padding: 0;
+    }
+
+    .data-grid {
+      width: 100%;
+      height: 500px;
+    }
+  }
+}
