@@ -45,7 +45,11 @@ export class AirtableService {
       withCredentials: true,
     });
   }
-  getRevisions(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/revisions`, { withCredentials: true });
+
+  getRevisions(params?: any) {
+    return this.http.get<{ data: any[]; total: number; page: number; limit: number }>(
+      `${this.apiUrl}/revisions`,
+      { params },
+    );
   }
 }

@@ -7,7 +7,6 @@
   flex-direction: column;
   gap: 24px;
 
-  /* Desktop Grid Layout */
   @media (min-width: 768px) {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -28,16 +27,12 @@
   border-bottom: 1px solid var(--mat-sys-outline-variant, #eee);
 }
 
-/* Mobile: Let the parent dialog handle scrolling natively.
-  Desktop: Force individual columns to scroll if they get too long.
-*/
 .section-content {
   @media (min-width: 768px) {
-    max-height: 60vh; /* Adjust this value if you want the dialog taller/shorter */
+    max-height: 60vh;
     overflow-y: auto;
-    padding-right: 12px; /* Space for the scrollbar */
+    padding-right: 12px;
 
-    /* Custom thin scrollbars for a cleaner look */
     &::-webkit-scrollbar {
       width: 6px;
     }
@@ -60,8 +55,6 @@
     display: none;
   }
 }
-
-/* --- Content Styles --- */
 
 .data-grid {
   display: grid;
@@ -118,6 +111,14 @@
   border: 1px solid var(--mat-sys-outline-variant, #ddd);
   border-radius: 4px;
   overflow-x: auto;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--mat-sys-on-surface-variant);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.loading-more {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
 }

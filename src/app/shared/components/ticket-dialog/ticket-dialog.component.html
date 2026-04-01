@@ -1,6 +1,5 @@
 <h2 mat-dialog-title>Record Details</h2>
 <mat-dialog-content class="dialog-body">
-
   <div class="content-wrapper">
     <div class="section">
       <h3 class="section-header">Current Data</h3>
@@ -22,26 +21,30 @@
 
     <div class="section">
       <h3 class="section-header">Revision History</h3>
-      <div class="section-content">
-        @if (isLoadingRevisions()) {
+      <div class="section-content" (scroll)="onScroll($event)">
+        @if (isLoadingRevisions() && currentPage === 0) {
           <mat-spinner diameter="30"></mat-spinner>
         } @else if (revisions().length === 0) {
           <p class="text-muted">No revisions found for this record.</p>
         } @else {
           <ul class="revision-list">
-            @for (rev of revisions(); track rev.id) {
+            @for (rev of revisions(); track rev.uuid || rev._id) {
               <li>
-                <strong>{{ rev.createdTime | date:'short' }}</strong> -
-                Changed by {{ rev.author?.name || 'System' }}:
-                <pre class="rev-details">{{ rev.changes | json }}</pre>
+                <strong>{{ rev.createdDate | date:'short' }}</strong> -
+                Changed by {{ rev.authoredBy || 'System' }}:
+                <pre class="rev-details">[{{ rev.columnType }}] {{ rev.oldValue }} ➔ {{ rev.newValue }}</pre>
               </li>
             }
           </ul>
+          @if (isLoadingMore()) {
+            <div class="loading-more">
+              <mat-spinner diameter="24"></mat-spinner>
+            </div>
+          }
         }
       </div>
     </div>
   </div>
-
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Close</button>
