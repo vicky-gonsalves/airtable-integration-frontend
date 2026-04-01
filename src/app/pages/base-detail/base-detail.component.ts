@@ -26,6 +26,7 @@ import {
 import { TicketDialogComponent } from 'src/app/shared/components/ticket-dialog/ticket-dialog.component';
 import { WorkspaceStateService } from 'src/app/shared/services/workspace-state/workspace-state.service';
 import { AirtableGridFilterUtil } from 'src/app/shared/utils/airtable-grid-filter.util';
+import { ScraperMfaDialogComponent } from 'src/app/shared/components/scraper-mfa-dialog/scraper-mfa-dialog.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -49,6 +50,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 })
 export class BaseDetailComponent implements OnInit, OnDestroy {
   @Input() baseId!: string;
+  @Input() tableId: string = '';
 
   private airtable = inject(AirtableService);
   private router = inject(Router);
@@ -67,6 +69,10 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     return activeBase ? activeBase.name : 'Tickets';
   });
 
+  tables = computed(() => {
+    return this.workspaceState.tablesMap()[this.baseId] || [];
+  });
+
   columnDefs = signal<ColDef[]>([]);
   isSyncing = signal(false);
   totalRows = signal<number>(0);
@@ -80,6 +86,30 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.workspaceState.loadBases();
     this.initialUrlParams = this.route.snapshot.queryParams;
+
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const prevTableId = this.tableId;
+      this.baseId = params.get('baseId') || '';
+      this.tableId = params.get('tableId') || '';
+
+      if (this.baseId) {
+        this.workspaceState.loadTables(this.baseId).subscribe((fetchedTables) => {
+          if (!this.tableId && fetchedTables.length > 0) {
+            this.router.navigate(['/workspaces', this.baseId, fetchedTables[0].id], {
+              replaceUrl: true,
+              queryParamsHandling: 'merge',
+            });
+          } else if (
+            this.tableId &&
+            this.tableId !== prevTableId &&
+            this.gridApi &&
+            !this.isFirstLoad
+          ) {
+            this.gridApi.setGridOption('datasource', this.createDatasource());
+          }
+        });
+      }
+    });
 
     this.searchControl.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
@@ -125,20 +155,17 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
           sortOrder = this.initialUrlParams['sortOrder'] || '';
           formula = this.initialUrlParams['formula'] || '';
           search = this.initialUrlParams['search'] || '';
-
           if (search) this.searchControl.setValue(search, { emitEvent: false });
         } else {
           if (params.sortModel && params.sortModel.length > 0) {
             sortBy = params.sortModel[0].colId;
             sortOrder = params.sortModel[0].sort;
           }
-
           const filterModel = params.filterModel;
-          if (Object.keys(filterModel).length > 0) {
-            formula = AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel);
-          } else {
-            formula = '';
-          }
+          formula =
+            Object.keys(filterModel).length > 0
+              ? AirtableGridFilterUtil.convertGridFiltersToFormula(filterModel)
+              : '';
 
           search = this.searchControl.value || '';
           this.updateUrlParams({
@@ -150,7 +177,16 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
           });
         }
 
-        const apiParams = { baseId: this.baseId, page, limit, sortBy, sortOrder, search, formula };
+        const apiParams = {
+          baseId: this.baseId,
+          tableId: this.tableId,
+          page,
+          limit,
+          sortBy,
+          sortOrder,
+          search,
+          formula,
+        };
 
         this.airtable.getData('tickets', { params: apiParams }).subscribe({
           next: (response: any) => {
@@ -158,7 +194,6 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
               ...item,
               ...(item.fields || {}),
             }));
-
             this.totalRows.set(response.total || 0);
 
             if (this.isFirstLoad) {
@@ -170,12 +205,10 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
                     defaultState: { sort: null },
                   });
                 }
-
                 if (formula) {
                   const filterModel = AirtableGridFilterUtil.parseFormulaToFilterModel(formula);
                   this.gridApi.setFilterModel(filterModel);
                 }
-
                 const urlPage = Number(this.initialUrlParams['page']);
                 if (urlPage && urlPage > 0) this.gridApi.paginationGoToPage(urlPage);
               }, 0);
@@ -198,14 +231,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     const allKeys = new Set<string>();
     data.forEach((row) => {
       Object.keys(row).forEach((key) => {
-        if (
-          key !== 'fields' &&
-          key !== 'createdTime' &&
-          key !== '_id' &&
-          key !== '__v' &&
-          key !== 'baseId' &&
-          key !== 'tableId'
-        ) {
+        if (!['fields', 'createdTime', '_id', '__v', 'baseId', 'tableId'].includes(key)) {
           allKeys.add(key);
         }
       });
@@ -246,37 +272,78 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  onEntityChange(newBaseId: string) {
+  onBaseChange(newBaseId: string) {
     this.router.navigate(['/workspaces', newBaseId]);
   }
 
-  syncCurrentBase() {
-    this.isSyncing.set(true);
-    this.airtable.getTables(this.baseId).subscribe({
-      next: (res) => {
-        if (!res.tables || res.tables.length === 0) {
-          this.snackBar.open('No tables found in this base to sync.', 'Close', { duration: 3000 });
-          this.isSyncing.set(false);
-          return;
-        }
-        const firstTableId = res.tables[0].id;
+  onEntityChange(newTableId: string) {
+    this.router.navigate(['/workspaces', this.baseId, newTableId], {
+      queryParamsHandling: 'merge',
+    });
+  }
 
-        this.airtable.syncData(this.baseId, firstTableId).subscribe({
-          next: () => {
-            this.snackBar.open('Sync successful!', 'Close', { duration: 2000 });
-            this.isSyncing.set(false);
-            if (this.gridApi) {
-              this.gridApi.setGridOption('datasource', this.createDatasource());
-            }
-          },
+  syncCurrentBase() {
+    if (!this.tableId) return;
+    this.isSyncing.set(true);
+
+    this.airtable.syncData(this.baseId, this.tableId).subscribe({
+      next: () => {
+        this.snackBar.open('Sync successful!', 'Close', { duration: 2000 });
+        this.isSyncing.set(false);
+        if (this.gridApi) {
+          this.gridApi.setGridOption('datasource', this.createDatasource());
+        }
+      },
+      error: () => {
+        this.snackBar.open('Sync failed. Please try again.', 'Close', { duration: 3000 });
+        this.isSyncing.set(false);
+      },
+    });
+  }
+
+  syncRevisionHistory() {
+    const dialogRef = this.dialog.open(ScraperMfaDialogComponent, { width: '400px' });
+    dialogRef.afterClosed().subscribe((credentials) => {
+      if (credentials) {
+        this.isSyncing.set(true);
+        this.airtable.submitMfa(credentials).subscribe({
+          next: () => this.processScraperQueue(this.baseId, this.tableId),
           error: () => {
-            this.snackBar.open('Sync failed. Please try again.', 'Close', { duration: 3000 });
+            this.snackBar.open('Authentication failed. Check credentials.', 'Close', {
+              duration: 4000,
+            });
             this.isSyncing.set(false);
           },
         });
+      }
+    });
+  }
+
+  private processScraperQueue(baseId: string, tableId: string, cursor?: string) {
+    this.airtable.runScraper(baseId, tableId, cursor).subscribe({
+      next: (res) => {
+        if (res.hasMore && res.cursor) {
+          this.processScraperQueue(baseId, tableId, res.cursor);
+        } else {
+          this.snackBar.open('Revision history sync completed successfully!', 'Close', {
+            duration: 3000,
+          });
+          this.isSyncing.set(false);
+          if (this.gridApi) {
+            this.gridApi.setGridOption('datasource', this.createDatasource());
+          }
+        }
       },
-      error: () => {
-        this.snackBar.open('Failed to fetch tables.', 'Close', { duration: 3000 });
+      error: (err) => {
+        if (err.status === 401 || err.status === 403) {
+          this.snackBar.open('Session expired or cookies invalid. Please resync.', 'Close', {
+            duration: 5000,
+          });
+        } else {
+          this.snackBar.open('Scraping interrupted or rate limit hit. Try again later.', 'Close', {
+            duration: 5000,
+          });
+        }
         this.isSyncing.set(false);
       },
     });

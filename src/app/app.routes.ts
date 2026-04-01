@@ -13,6 +13,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: WorkspacesComponent },
       { path: ':baseId', component: BaseDetailComponent },
+      { path: ':baseId/:tableId', component: BaseDetailComponent },
     ],
   },
   { path: '**', redirectTo: '' },

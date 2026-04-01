@@ -176,7 +176,7 @@ export class DashboardComponent implements OnInit {
   }
 
   runScraper() {
-    const { selectedBaseId, selectedTableId } = this.dashboardForm.value;
+    const { selectedBaseId, selectedTableId } = this.dashboardForm.getRawValue();
 
     if (!selectedBaseId || !selectedTableId) {
       this.showMessage('Please select a Base and Table from the top dropdowns first.');
@@ -186,10 +186,14 @@ export class DashboardComponent implements OnInit {
     this.showMessage('Running scraper on pages... this will take a moment.');
 
     this.airtableService.runScraper(selectedBaseId, selectedTableId).subscribe({
-      next: () => {
-        this.showMessage('Scraping complete! Loading revision history...');
-        this.dashboardForm.patchValue({ selectedCollection: 'Revisions' });
-        this.loadData();
+      next: (res) => {
+        if (res && res.hasMore) {
+          this.showMessage(`Batch processed. Processing next batch...`);
+        } else {
+          this.showMessage('Scraping complete! Loading revision history...');
+          this.dashboardForm.patchValue({ selectedCollection: 'Revisions' });
+          this.loadData();
+        }
       },
       error: () => this.showMessage('Scraper failed. Did you authenticate the cookies first?'),
     });

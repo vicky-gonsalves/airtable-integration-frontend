@@ -57,10 +57,10 @@ export class AirtableService {
     return this.http.post(`${this.apiUrl}/scrape/auth`, credentials, { withCredentials: true });
   }
 
-  runScraper(baseId: string, tableId: string): Observable<any> {
+  runScraper(baseId: string, tableId: string, cursor?: string): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/scrape/run`,
-      { baseId, tableId },
+      { baseId, tableId, cursor },
       { withCredentials: true },
     );
   }

@@ -6,17 +6,19 @@
   <span class="spacer"></span>
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-    <mat-label>Integration</mat-label>
-    <mat-select [value]="'Airtable'">
-      <mat-option value="Airtable">Airtable</mat-option>
+    <mat-label>Workspace</mat-label>
+    <mat-select [value]="baseId" (selectionChange)="onBaseChange($event.value)" [disabled]="!isLoaded()">
+      @for (base of bases(); track base.id) {
+        <mat-option [value]="base.id">{{ base.name }}</mat-option>
+      }
     </mat-select>
   </mat-form-field>
 
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
     <mat-label>Entity (Collection)</mat-label>
-    <mat-select [value]="baseId" (selectionChange)="onEntityChange($event.value)" [disabled]="!isLoaded()">
-      @for (base of bases(); track base.id) {
-        <mat-option [value]="base.id">{{ base.name }}</mat-option>
+    <mat-select [value]="tableId" (selectionChange)="onEntityChange($event.value)" [disabled]="tables().length === 0">
+      @for (table of tables(); track table.id) {
+        <mat-option [value]="table.id">{{ table.name }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
@@ -47,14 +49,24 @@
   } @else {
     <div class="grid-header">
       <h3>{{ currentBaseName() }}</h3>
-      <button
-        mat-stroked-button
-        color="primary"
-        (click)="syncCurrentBase()"
-        [disabled]="isSyncing()"
-      >
-        <mat-icon>refresh</mat-icon> Resync Data
-      </button>
+      <div style="display: flex; gap: 12px;">
+        <button
+          mat-stroked-button
+          color="accent"
+          (click)="syncRevisionHistory()"
+          [disabled]="isSyncing()"
+        >
+          <mat-icon>history</mat-icon> Resync Revision History
+        </button>
+        <button
+          mat-stroked-button
+          color="primary"
+          (click)="syncCurrentBase()"
+          [disabled]="isSyncing()"
+        >
+          <mat-icon>refresh</mat-icon> Resync Data
+        </button>
+      </div>
     </div>
 
     <div class="grid-wrapper" style="display: flex; flex-direction: column; height: 100%;">
