@@ -60,8 +60,42 @@
   } @else if (isSyncing()) {
     <div class="center-content"><mat-spinner></mat-spinner><p>Syncing data...</p></div>
   } @else {
+
     <div class="grid-header">
-      <h3>{{ currentTableName() }}</h3>
+      <div class="title-section">
+        <h3>{{ currentTableName() }}</h3>
+
+        @if (syncMeta()) {
+          <div class="sync-meta-info">
+            @if (syncMeta().lastTicketSyncDate) {
+              <div class="meta-item">
+                <mat-icon>cloud_sync</mat-icon>
+                <span>Data: {{ syncMeta().lastTicketSyncDate | date:'medium' }}</span>
+                <span class="status-badge" [class]="syncMeta().ticketSyncStatus?.toLowerCase()">
+                  {{ syncMeta().ticketSyncStatus || 'UNKNOWN' }}
+                </span>
+                @if (syncMeta().ticketsProcessedLastSync) {
+                  <span class="meta-count">({{ syncMeta().ticketsProcessedLastSync }} records)</span>
+                }
+              </div>
+            }
+
+            @if (syncMeta().lastRevisionSyncDate) {
+              <div class="meta-item">
+                <mat-icon>history</mat-icon>
+                <span>History: {{ syncMeta().lastRevisionSyncDate | date:'medium' }}</span>
+                <span class="status-badge" [class]="syncMeta().revisionSyncStatus?.toLowerCase()">
+                  {{ syncMeta().revisionSyncStatus || 'UNKNOWN' }}
+                </span>
+                @if (syncMeta().revisionsProcessedLastSync) {
+                  <span class="meta-count">({{ syncMeta().revisionsProcessedLastSync }} updates)</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
       <div style="display: flex; gap: 12px">
         <button
           mat-stroked-button

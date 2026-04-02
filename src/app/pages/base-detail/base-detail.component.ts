@@ -1,4 +1,5 @@
 import { Component, inject, Input, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AirtableService } from 'src/app/shared/services/airtable/airtable.service';
@@ -44,6 +45,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     MatDialogModule,
     MatProgressSpinnerModule,
     RouterModule,
+    DatePipe,
   ],
   templateUrl: './base-detail.component.html',
   styleUrl: './base-detail.component.scss',
@@ -86,6 +88,8 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
   totalRows = signal<number>(0);
   isLoadingData = signal<boolean>(true);
   hasActiveFilters = signal<boolean>(false);
+
+  syncMeta = signal<any>(null);
 
   searchControl = this.fb.control('');
 
@@ -144,6 +148,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
     this.totalRows.set(0);
     this.isLoadingData.set(true);
     this.hasActiveFilters.set(false);
+    this.syncMeta.set(null);
     this.lastFetchParams = null;
     this.lastFetchResponse = null;
     this.searchControl.setValue('', { emitEvent: false });
@@ -201,6 +206,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
           ...(item.fields || {}),
         }));
         this.totalRows.set(response.total || 0);
+        this.syncMeta.set(response.syncMeta || null);
 
         this.lastFetchParams = JSON.stringify(initialParams);
         this.lastFetchResponse = { data: flatData, total: response.total };
@@ -311,6 +317,8 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
             }));
 
             this.totalRows.set(response.total || 0);
+            this.syncMeta.set(response.syncMeta || null);
+
             if (this.columnDefs().length === 0 && flatData.length > 0) {
               this.setupColumns(flatData);
             }
