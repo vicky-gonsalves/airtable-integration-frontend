@@ -1,63 +1,14 @@
-<mat-toolbar color="primary" class="toolbar">
-  <div class="toolbar-header">
-    <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span>Workspaces</span>
-  </div>
-
-  <span class="spacer hide-mobile"></span>
-
-  <div class="toolbar-filters">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-      <mat-label>Active Integrations</mat-label>
-      <mat-select
-        [value]="baseId"
-        (selectionChange)="onBaseChange($event.value)"
-        [disabled]="!isLoaded()"
-      >
-        @for (base of bases(); track base.id) {
-          <mat-option [value]="base.id">{{ base.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-      <mat-label>Entity</mat-label>
-      <mat-select
-        [value]="tableId"
-        (selectionChange)="onEntityChange($event.value)"
-        [disabled]="tables().length === 0"
-      >
-        @for (table of tables(); track table.id) {
-          <mat-option [value]="table.id">{{ table.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field
-      appearance="outline"
-      subscriptSizing="dynamic"
-      class="search-field dark-theme-field"
-    >
-      <mat-label>Search Data</mat-label>
-      <input matInput placeholder="Keyword..." [formControl]="searchControl" />
-
-      @if (searchControl.value) {
-        <button
-          mat-icon-button
-          matSuffix
-          (click)="searchControl.setValue('')"
-          aria-label="Clear search"
-        >
-          <mat-icon>close</mat-icon>
-        </button>
-      } @else {
-        <mat-icon matSuffix>search</mat-icon>
-      }
-    </mat-form-field>
-  </div>
-</mat-toolbar>
+<app-base-detail-toolbar
+  [baseId]="baseId"
+  [tableId]="tableId"
+  [bases]="bases()"
+  [tables]="tables()"
+  [isLoaded]="isLoaded()"
+  [searchControl]="searchControl"
+  (baseChange)="onBaseChange($event)"
+  (entityChange)="onEntityChange($event)"
+  (clearSearch)="searchControl.setValue('')"
+/>
 
 <div class="content-container">
   @if (!isLoaded()) {
@@ -65,61 +16,14 @@
   } @else if (isSyncing()) {
     <div class="center-content"><mat-spinner></mat-spinner><p>Syncing data...</p></div>
   } @else {
-
-    <div class="grid-header">
-      <div class="title-section">
-        <h3>{{ currentTableName() }}</h3>
-
-        @if (syncMeta()) {
-          <div class="sync-meta-info">
-            @if (syncMeta().lastTicketSyncDate) {
-              <div class="meta-item">
-                <mat-icon>cloud_sync</mat-icon>
-                <span>Data: {{ syncMeta().lastTicketSyncDate | date:'medium' }}</span>
-                <span class="status-badge" [class]="syncMeta().ticketSyncStatus?.toLowerCase()">
-                  {{ syncMeta().ticketSyncStatus || 'UNKNOWN' }}
-                </span>
-                @if (syncMeta().ticketsProcessedLastSync) {
-                  <span class="meta-count">({{ syncMeta().ticketsProcessedLastSync }} records)</span>
-                }
-              </div>
-            }
-
-            @if (syncMeta().lastRevisionSyncDate) {
-              <div class="meta-item">
-                <mat-icon>history</mat-icon>
-                <span>History: {{ syncMeta().lastRevisionSyncDate | date:'medium' }}</span>
-                <span class="status-badge" [class]="syncMeta().revisionSyncStatus?.toLowerCase()">
-                  {{ syncMeta().revisionSyncStatus || 'UNKNOWN' }}
-                </span>
-                @if (syncMeta().revisionsProcessedLastSync) {
-                  <span class="meta-count">({{ syncMeta().revisionsProcessedLastSync }} updates)</span>
-                }
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <div class="action-buttons">
-        <button
-          mat-stroked-button
-          color="accent"
-          (click)="syncRevisionHistory()"
-          [disabled]="isSyncing() || !tableId"
-        >
-          <mat-icon>history</mat-icon> Resync Revision History
-        </button>
-        <button
-          mat-stroked-button
-          color="primary"
-          (click)="syncCurrentBase()"
-          [disabled]="isSyncing() || !tableId"
-        >
-          <mat-icon>refresh</mat-icon> Resync Data
-        </button>
-      </div>
-    </div>
+    <app-base-detail-header
+      [currentTableName]="currentTableName()"
+      [syncMeta]="syncMeta()"
+      [isSyncing]="isSyncing()"
+      [tableId]="tableId"
+      (syncRevisionHistory)="syncRevisionHistory()"
+      (syncCurrentBase)="syncCurrentBase()"
+    />
 
     <div class="grid-wrapper">
       @if (isLoadingData()) {

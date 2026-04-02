@@ -1,12 +1,8 @@
 import { Component, inject, Input, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { AirtableService } from 'src/app/shared/services/airtable/airtable.service';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AgGridModule } from 'ag-grid-angular';
@@ -28,6 +24,8 @@ import { TicketDialogComponent } from 'src/app/shared/components/ticket-dialog/t
 import { WorkspaceStateService } from 'src/app/shared/services/workspace-state/workspace-state.service';
 import { AirtableGridFilterUtil } from 'src/app/shared/utils/airtable-grid-filter.util';
 import { ScraperMfaDialogComponent } from 'src/app/shared/components/scraper-mfa-dialog/scraper-mfa-dialog.component';
+import { BaseDetailToolbarComponent } from 'src/app/shared/components/base-detail-toolbar/base-detail-toolbar.component';
+import { BaseDetailHeaderComponent } from 'src/app/shared/components/base-detail-header/base-detail-header.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -36,16 +34,13 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatToolbarModule,
-    MatSelectModule,
-    MatInputModule,
     MatButtonModule,
     MatIconModule,
     AgGridModule,
     MatDialogModule,
     MatProgressSpinnerModule,
-    RouterModule,
-    DatePipe,
+    BaseDetailToolbarComponent,
+    BaseDetailHeaderComponent,
   ],
   templateUrl: './base-detail.component.html',
   styleUrl: './base-detail.component.scss',

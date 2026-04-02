@@ -1,0 +1,54 @@
+<div class="grid-header">
+  <div class="title-section">
+    <h3>{{ currentTableName }}</h3>
+
+    @if (syncMeta) {
+      <div class="sync-meta-info">
+        @if (syncMeta.lastTicketSyncDate) {
+          <div class="meta-item">
+            <mat-icon>cloud_sync</mat-icon>
+            <span>Data: {{ syncMeta.lastTicketSyncDate | date:'medium' }}</span>
+            <span class="status-badge" [class]="syncMeta.ticketSyncStatus?.toLowerCase()">
+              {{ syncMeta.ticketSyncStatus || 'UNKNOWN' }}
+            </span>
+            @if (syncMeta.ticketsProcessedLastSync) {
+              <span class="meta-count">({{ syncMeta.ticketsProcessedLastSync }} records)</span>
+            }
+          </div>
+        }
+
+        @if (syncMeta.lastRevisionSyncDate) {
+          <div class="meta-item">
+            <mat-icon>history</mat-icon>
+            <span>History: {{ syncMeta.lastRevisionSyncDate | date:'medium' }}</span>
+            <span class="status-badge" [class]="syncMeta.revisionSyncStatus?.toLowerCase()">
+              {{ syncMeta.revisionSyncStatus || 'UNKNOWN' }}
+            </span>
+            @if (syncMeta.revisionsProcessedLastSync) {
+              <span class="meta-count">({{ syncMeta.revisionsProcessedLastSync }} updates)</span>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="action-buttons">
+    <button
+      mat-stroked-button
+      color="accent"
+      (click)="syncRevisionHistory.emit()"
+      [disabled]="isSyncing || !tableId"
+    >
+      <mat-icon>history</mat-icon> Resync Revision History
+    </button>
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="syncCurrentBase.emit()"
+      [disabled]="isSyncing || !tableId"
+    >
+      <mat-icon>refresh</mat-icon> Resync Data
+    </button>
+  </div>
+</div>

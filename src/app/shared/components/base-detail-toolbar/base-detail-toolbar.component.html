@@ -1,0 +1,60 @@
+<mat-toolbar color="primary" class="toolbar">
+  <div class="toolbar-header">
+    <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Workspaces</span>
+  </div>
+
+  <span class="spacer hide-mobile"></span>
+
+  <div class="toolbar-filters">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+      <mat-label>Active Integrations</mat-label>
+      <mat-select
+        [value]="baseId"
+        (selectionChange)="baseChange.emit($event.value)"
+        [disabled]="!isLoaded"
+      >
+        @for (base of bases; track base.id) {
+          <mat-option [value]="base.id">{{ base.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+      <mat-label>Entity</mat-label>
+      <mat-select
+        [value]="tableId"
+        (selectionChange)="entityChange.emit($event.value)"
+        [disabled]="tables.length === 0"
+      >
+        @for (table of tables; track table.id) {
+          <mat-option [value]="table.id">{{ table.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field
+      appearance="outline"
+      subscriptSizing="dynamic"
+      class="search-field dark-theme-field"
+    >
+      <mat-label>Search Data</mat-label>
+      <input matInput placeholder="Keyword..." [formControl]="searchControl" />
+
+      @if (searchControl.value) {
+        <button
+          mat-icon-button
+          matSuffix
+          (click)="clearSearch.emit()"
+          aria-label="Clear search"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else {
+        <mat-icon matSuffix>search</mat-icon>
+      }
+    </mat-form-field>
+  </div>
+</mat-toolbar>
