@@ -105,4 +105,9 @@ export class TicketDialogComponent implements OnInit {
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
     return isoDateRegex.test(val);
   }
+
+  isStatusKey(key: unknown): boolean {
+    if (typeof key !== 'string') return false;
+    return key.toLowerCase() === 'status';
+  }
 }

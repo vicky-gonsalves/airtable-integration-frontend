@@ -24,7 +24,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 }
 
 .dialog-body {
-  padding-top: 16px;
+  padding-top: 32px;
 }
 
 .content-wrapper {
@@ -141,29 +141,32 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 .nested-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-left: 8px;
+  gap: 12px;
+  padding-left: 12px;
   border-left: 2px solid $border-color;
+  margin-top: 4px;
 }
 
 .nested-row {
   display: flex;
-  justify-content: flex-start;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .nested-label {
-  font-size: 13px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: $text-muted;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nested-value {
-  font-size: 13px;
+  font-size: 14px;
   color: $text-main;
-  text-align: right;
-  max-width: 60%;
+  text-align: left;
+  max-width: 100%;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
@@ -171,7 +174,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 .array-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -181,7 +184,6 @@ $bg-white: var(--mat-sys-surface, #ffffff);
   color: $text-main;
   font-size: 13px;
 }
-
 
 .revision-timeline {
   list-style-type: none;

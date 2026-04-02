@@ -17,7 +17,7 @@
             @if (prop.key !== 'actions' && prop.key !== 'fields') {
               <div class="data-item">
                 <span class="label">{{ formatKey(prop.key) }}</span>
-                <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: prop.value }"></ng-container>
+                <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: prop.value, key: prop.key }"></ng-container>
               </div>
             }
           }
@@ -78,12 +78,12 @@
   <button mat-button mat-dialog-close>Close</button>
 </mat-dialog-actions>
 
-<ng-template #dynamicValue let-val>
+<ng-template #dynamicValue let-val let-key="key">
   @if (isArray(val)) {
     <div class="array-container">
       @for (item of val; track $index) {
         <div class="array-item">
-          <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: item }"></ng-container>
+          <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: item, key: key }"></ng-container>
         </div>
       }
     </div>
@@ -93,9 +93,9 @@
     <div class="nested-card">
       @for (nested of val | keyvalue; track nested.key) {
         <div class="nested-row">
-          <span class="nested-label">{{ formatKey(nested.key) }}:</span>
+          <span class="nested-label">{{ formatKey(nested.key) }}</span>
           <span class="nested-value">
-            <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: nested.value }"></ng-container>
+            <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: nested.value, key: nested.key }"></ng-container>
           </span>
         </div>
       }
@@ -106,7 +106,7 @@
     @if (isDateString(val)) {
       <span class="value">{{ val | date:'medium' }}</span>
     } @else {
-      <span class="value" [class.status-chip]="val === 'In progress' || val === 'Completed'">
+      <span class="value" [class.status-chip]="isStatusKey(key)">
         {{ val !== null && val !== undefined ? val : 'N/A' }}
       </span>
     }
