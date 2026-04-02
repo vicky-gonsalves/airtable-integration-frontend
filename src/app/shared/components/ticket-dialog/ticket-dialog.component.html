@@ -31,6 +31,14 @@
       <h3 class="section-header">
         <mat-icon>history</mat-icon> Revision History
       </h3>
+
+      @if (!isRevisionSynced()) {
+        <div class="sync-warning">
+          <mat-icon>warning_amber</mat-icon>
+          <span>Revision history has not been synced for this collection yet. Please run a history sync from the workspace dashboard.</span>
+        </div>
+      }
+
       <div class="section-content" (scroll)="onScroll($event)">
         @if (isLoadingRevisions() && currentPage === 0) {
           <div class="loading-container">

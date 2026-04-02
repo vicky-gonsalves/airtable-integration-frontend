@@ -30,6 +30,7 @@ export class TicketDialogComponent implements OnInit {
   isLoadingRevisions = signal(true);
   isLoadingMore = signal(false);
   hasMore = signal(false);
+  isRevisionSynced = signal(true);
 
   currentPage = 0;
   limit = 20;
@@ -37,8 +38,15 @@ export class TicketDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<TicketDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: { ticket: { id: string; airtableId?: string; [key: string]: any } },
-  ) {}
+    public data: {
+      ticket: { id: string; airtableId?: string; [key: string]: any };
+      syncMeta?: any;
+    },
+  ) {
+    if (!this.data.syncMeta || !this.data.syncMeta.lastRevisionSyncDate) {
+      this.isRevisionSynced.set(false);
+    }
+  }
 
   ngOnInit() {
     this.loadRevisions();

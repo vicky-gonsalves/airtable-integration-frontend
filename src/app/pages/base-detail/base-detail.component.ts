@@ -404,7 +404,7 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
       this.dialog.open(TicketDialogComponent, {
         width: '1000px',
         maxWidth: '90vw',
-        data: { ticket: event.data },
+        data: { ticket: event.data, syncMeta: this.syncMeta() },
       });
     }
   }
