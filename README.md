@@ -17,3 +17,28 @@ This project is a modern Angular 19 frontend application designed to interface w
 * **UI Library:** Angular Material (Cards, Dialogs, Toolbars, Spinners, Snackbars)
 * **Data Grid:** AG Grid Community
 * **State Management:** Angular Signals & RxJS
+
+
+## Setup and Installation
+
+To get the project up and running on your local machine, follow these steps:
+
+### 1. **Clone the repository:**
+```bash
+git clone <your-repository-url>
+cd <your-project-directory>
+```
+### 2. Install dependencies:
+
+```bash 
+yarn install 
+```
+
+### 3. Configure the Environment:  
+- By default, the application expects a local backend server running on port `3000`.
+- If your backend is hosted elsewhere, update the `apiHost` variable in `src/environments/environment.ts`.
+
+### 4. Development server
+```bash
+yarn run serve
+```
