@@ -11,9 +11,18 @@
 
 <div class="workspace-container">
   @if (isLoading()) {
-    <div class="state-container">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p class="state-text">Loading workspaces...</p>
+    <div class="grid">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <mat-card class="base-card skeleton-card">
+          <mat-card-header>
+            <div mat-card-avatar class="skeleton-avatar"></div>
+            <div class="skeleton-text-container">
+              <div class="skeleton-title"></div>
+              <div class="skeleton-subtitle"></div>
+            </div>
+          </mat-card-header>
+        </mat-card>
+      }
     </div>
   } @else {
     @if (bases().length > 0) {
