@@ -466,11 +466,11 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
         this.isSyncing.set(true);
         this.airtable.submitMfa(credentials).subscribe({
           next: () => this.processScraperQueue(this.baseId, this.tableId, resumeCursor),
-          error: () => {
-            this.snackBar.open('Authentication failed. Check credentials.', 'Close', {
-              duration: 4000,
-            });
+          error: (err) => {
+            const errorMessage = err.error?.message || 'Authentication failed. Check credentials.';
+            this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
             this.isSyncing.set(false);
+            this.syncRevisionHistory(resumeCursor);
           },
         });
       }
@@ -498,19 +498,16 @@ export class BaseDetailComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isSyncing.set(false);
 
-        if (err.error?.message === 'SCRAPER_AUTH_REQUIRED') {
+        if (
+          err.error?.message === 'SCRAPER_AUTH_REQUIRED' ||
+          err.status === 401 ||
+          err.status === 403
+        ) {
           this.snackBar.open(
-            'Airtable session expired. Please re-authenticate to resume.',
+            'Airtable session expired or invalid. Please re-authenticate.',
             'Close',
-            {
-              duration: 5000,
-            },
+            { duration: 5000 },
           );
-          this.syncRevisionHistory(cursor);
-        } else if (err.status === 401 || err.status === 403) {
-          this.snackBar.open('Session expired or cookies invalid. Please resync.', 'Close', {
-            duration: 5000,
-          });
           this.syncRevisionHistory(cursor);
         } else {
           this.snackBar.open('Scraping interrupted or rate limit hit. Try again later.', 'Close', {
