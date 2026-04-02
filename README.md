@@ -3,6 +3,7 @@
 This project is a modern Angular 19 frontend application designed to interface with an Airtable synchronization backend. It allows users to authenticate with their Airtable accounts, browse workspaces (bases) and tables, view synchronized data through an advanced data grid, and inspect detailed record revision histories.
 
 <img width="1919" height="897" alt="4" src="https://github.com/user-attachments/assets/186a3a32-5b1b-4012-ab73-a153630f6e33" />
+<img width="1901" height="890" alt="image" src="https://github.com/user-attachments/assets/7ca27dc7-b894-4d06-9d93-7982b4d9f92f" />
 
 
 ## Key Features
