@@ -1,57 +1,62 @@
 <mat-toolbar color="primary" class="toolbar">
-  <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <span>Workspaces</span>
-  <span class="spacer"></span>
+  <div class="toolbar-header">
+    <button mat-icon-button routerLink="/workspaces" aria-label="Back to workspaces">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Workspaces</span>
+  </div>
 
-  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-    <mat-label>Active Integrations</mat-label>
-    <mat-select
-      [value]="baseId"
-      (selectionChange)="onBaseChange($event.value)"
-      [disabled]="!isLoaded()"
-    >
-      @for (base of bases(); track base.id) {
-        <mat-option [value]="base.id">{{ base.name }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  <span class="spacer hide-mobile"></span>
 
-  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
-    <mat-label>Entity</mat-label>
-    <mat-select
-      [value]="tableId"
-      (selectionChange)="onEntityChange($event.value)"
-      [disabled]="tables().length === 0"
-    >
-      @for (table of tables(); track table.id) {
-        <mat-option [value]="table.id">{{ table.name }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field
-    appearance="outline"
-    subscriptSizing="dynamic"
-    class="search-field dark-theme-field"
-  >
-    <mat-label>Search Data</mat-label>
-    <input matInput placeholder="Keyword..." [formControl]="searchControl" />
-
-    @if (searchControl.value) {
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="searchControl.setValue('')"
-        aria-label="Clear search"
+  <div class="toolbar-filters">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+      <mat-label>Active Integrations</mat-label>
+      <mat-select
+        [value]="baseId"
+        (selectionChange)="onBaseChange($event.value)"
+        [disabled]="!isLoaded()"
       >
-        <mat-icon>close</mat-icon>
-      </button>
-    } @else {
-      <mat-icon matSuffix>search</mat-icon>
-    }
-  </mat-form-field>
+        @for (base of bases(); track base.id) {
+          <mat-option [value]="base.id">{{ base.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dark-theme-field">
+      <mat-label>Entity</mat-label>
+      <mat-select
+        [value]="tableId"
+        (selectionChange)="onEntityChange($event.value)"
+        [disabled]="tables().length === 0"
+      >
+        @for (table of tables(); track table.id) {
+          <mat-option [value]="table.id">{{ table.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field
+      appearance="outline"
+      subscriptSizing="dynamic"
+      class="search-field dark-theme-field"
+    >
+      <mat-label>Search Data</mat-label>
+      <input matInput placeholder="Keyword..." [formControl]="searchControl" />
+
+      @if (searchControl.value) {
+        <button
+          mat-icon-button
+          matSuffix
+          (click)="searchControl.setValue('')"
+          aria-label="Clear search"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      } @else {
+        <mat-icon matSuffix>search</mat-icon>
+      }
+    </mat-form-field>
+  </div>
 </mat-toolbar>
 
 <div class="content-container">
@@ -96,7 +101,7 @@
         }
       </div>
 
-      <div style="display: flex; gap: 12px">
+      <div class="action-buttons">
         <button
           mat-stroked-button
           color="accent"

@@ -18,7 +18,7 @@ import { AirtableService } from 'src/app/shared/services/airtable/airtable.servi
     MatToolbarModule,
     MatIconModule,
     MatRipple,
-    MatButtonModule, // Added for mat-icon-button
+    MatButtonModule,
   ],
   templateUrl: './workspaces.component.html',
   styleUrl: './workspaces.component.scss',
@@ -26,7 +26,7 @@ import { AirtableService } from 'src/app/shared/services/airtable/airtable.servi
 export class WorkspacesComponent implements OnInit {
   private workspaceState = inject(WorkspaceStateService);
   private router = inject(Router);
-  private airtableService = inject(AirtableService); // Inject Airtable Service
+  private airtableService = inject(AirtableService);
 
   bases = this.workspaceState.bases;
   isLoading = this.workspaceState.isLoading;
@@ -42,12 +42,9 @@ export class WorkspacesComponent implements OnInit {
   logout() {
     this.airtableService.logout().subscribe({
       next: () => {
-        // Clear frontend state if needed, then navigate to root/login
         this.router.navigate(['/']);
       },
-      error: (err) => {
-        console.error('Logout failed', err);
-        // Fallback navigation even if API fails
+      error: () => {
         this.router.navigate(['/']);
       },
     });

@@ -16,16 +16,24 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 
     h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 500;
       color: $text-main;
+
+      @media (min-width: 768px) {
+        font-size: 20px;
+      }
     }
   }
 }
 
 .dialog-body {
-  padding-top: 24px;
+  padding-top: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+
   @media (min-width: 768px) {
+    padding-top: 24px;
     overflow: hidden !important;
     height: 70vh;
     display: flex;
@@ -123,6 +131,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 
 .mobile-divider {
   display: block;
+  margin: 16px 0;
   @media (min-width: 768px) {
     display: none;
   }
@@ -259,10 +268,16 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 
 .rev-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
   margin-bottom: 8px;
   font-size: 12px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 
   .rev-date {
     font-weight: 600;
@@ -277,13 +292,18 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 
 .rev-details {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   background: $bg-light;
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 13px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
 
   .rev-type {
     font-weight: 600;
@@ -293,6 +313,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
   .rev-change {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
     flex: 1;
 
