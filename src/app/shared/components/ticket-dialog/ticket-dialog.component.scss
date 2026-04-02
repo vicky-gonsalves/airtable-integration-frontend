@@ -24,7 +24,13 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 }
 
 .dialog-body {
-  padding-top: 32px;
+  padding-top: 24px;
+  @media (min-width: 768px) {
+    overflow: hidden !important;
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .content-wrapper {
@@ -36,25 +42,33 @@ $bg-white: var(--mat-sys-surface, #ffffff);
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
   }
 }
 
 .section {
   display: flex;
   flex-direction: column;
+  @media (min-width: 768px) {
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 0;
+  margin-top: 10px;
   margin-bottom: 16px;
   padding-bottom: 8px;
   font-size: 16px;
   font-weight: 500;
   color: $text-main;
   border-bottom: 1px solid $border-color;
+  flex-shrink: 0;
 
   mat-icon {
     font-size: 20px;
@@ -75,6 +89,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
   margin-bottom: 16px;
   font-size: 13px;
   line-height: 1.4;
+  flex-shrink: 0;
 
   mat-icon {
     font-size: 20px;
@@ -86,7 +101,7 @@ $bg-white: var(--mat-sys-surface, #ffffff);
 
 .section-content {
   @media (min-width: 768px) {
-    max-height: 60vh;
+    flex: 1;
     overflow-y: auto;
     padding-right: 12px;
 
