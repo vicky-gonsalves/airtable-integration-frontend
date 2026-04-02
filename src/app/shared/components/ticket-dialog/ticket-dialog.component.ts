@@ -4,7 +4,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DatePipe, JsonPipe, KeyValuePipe } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { DatePipe, KeyValuePipe, NgTemplateOutlet } from '@angular/common';
 
 @Component({
   selector: 'app-ticket-dialog',
@@ -14,9 +15,10 @@ import { DatePipe, JsonPipe, KeyValuePipe } from '@angular/common';
     MatButtonModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    MatIconModule,
     KeyValuePipe,
     DatePipe,
-    JsonPipe,
+    NgTemplateOutlet,
   ],
   templateUrl: './ticket-dialog.component.html',
   styleUrl: './ticket-dialog.component.scss',
@@ -82,5 +84,25 @@ export class TicketDialogComponent implements OnInit {
         this.loadRevisions(true);
       }
     }
+  }
+
+  isArray(val: unknown): boolean {
+    return Array.isArray(val);
+  }
+
+  isObject(val: unknown): boolean {
+    return val !== null && typeof val === 'object' && !Array.isArray(val);
+  }
+
+  formatKey(key: unknown): string {
+    const strKey = String(key);
+    const result = strKey.replace(/([A-Z])/g, ' $1');
+    return result.charAt(0).toUpperCase() + result.slice(1);
+  }
+
+  isDateString(val: unknown): boolean {
+    if (typeof val !== 'string') return false;
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+    return isoDateRegex.test(val);
   }
 }

@@ -1,15 +1,23 @@
-<h2 mat-dialog-title>Record Details</h2>
+<div class="dialog-header" mat-dialog-title>
+  <div class="title-with-icon">
+    <mat-icon color="primary">receipt_long</mat-icon>
+    <h2>Record Details</h2>
+  </div>
+</div>
+
 <mat-dialog-content class="dialog-body">
   <div class="content-wrapper">
     <div class="section">
-      <h3 class="section-header">Current Data</h3>
+      <h3 class="section-header">
+        <mat-icon>data_object</mat-icon> Current Data
+      </h3>
       <div class="section-content">
         <div class="data-grid">
           @for (prop of data.ticket | keyvalue; track prop.key) {
             @if (prop.key !== 'actions' && prop.key !== 'fields') {
               <div class="data-item">
-                <span class="label">{{ prop.key }}:</span>
-                <span class="value">{{ prop.value | json }}</span>
+                <span class="label">{{ formatKey(prop.key) }}</span>
+                <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: prop.value }"></ng-container>
               </div>
             }
           }
@@ -20,19 +28,38 @@
     <mat-divider class="mobile-divider"></mat-divider>
 
     <div class="section">
-      <h3 class="section-header">Revision History</h3>
+      <h3 class="section-header">
+        <mat-icon>history</mat-icon> Revision History
+      </h3>
       <div class="section-content" (scroll)="onScroll($event)">
         @if (isLoadingRevisions() && currentPage === 0) {
-          <mat-spinner diameter="30"></mat-spinner>
+          <div class="loading-container">
+            <mat-spinner diameter="30"></mat-spinner>
+          </div>
         } @else if (revisions().length === 0) {
-          <p class="text-muted">No revisions found for this record.</p>
+          <div class="empty-state">
+            <mat-icon>info_outline</mat-icon>
+            <p class="text-muted">No revisions found for this record.</p>
+          </div>
         } @else {
-          <ul class="revision-list">
+          <ul class="revision-timeline">
             @for (rev of revisions(); track rev.uuid || rev._id) {
-              <li>
-                <strong>{{ rev.createdDate | date:'short' }}</strong> -
-                Changed by {{ rev.authoredBy || 'System' }}:
-                <pre class="rev-details">[{{ rev.columnType }}] {{ rev.oldValue }} ➔ {{ rev.newValue }}</pre>
+              <li class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="rev-header">
+                    <span class="rev-date">{{ rev.createdDate | date:'medium' }}</span>
+                    <span class="rev-author">by {{ rev.authoredBy || 'System' }}</span>
+                  </div>
+                  <div class="rev-details">
+                    <span class="rev-type">[{{ rev.columnType }}]</span>
+                    <span class="rev-change">
+                      <span class="old-val">{{ rev.oldValue || 'None' }}</span>
+                      <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+                      <span class="new-val">{{ rev.newValue || 'None' }}</span>
+                    </span>
+                  </div>
+                </div>
               </li>
             }
           </ul>
@@ -46,6 +73,42 @@
     </div>
   </div>
 </mat-dialog-content>
+
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Close</button>
 </mat-dialog-actions>
+
+<ng-template #dynamicValue let-val>
+  @if (isArray(val)) {
+    <div class="array-container">
+      @for (item of val; track $index) {
+        <div class="array-item">
+          <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: item }"></ng-container>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (isObject(val)) {
+    <div class="nested-card">
+      @for (nested of val | keyvalue; track nested.key) {
+        <div class="nested-row">
+          <span class="nested-label">{{ formatKey(nested.key) }}:</span>
+          <span class="nested-value">
+            <ng-container *ngTemplateOutlet="dynamicValue; context: { $implicit: nested.value }"></ng-container>
+          </span>
+        </div>
+      }
+    </div>
+  }
+
+  @else {
+    @if (isDateString(val)) {
+      <span class="value">{{ val | date:'medium' }}</span>
+    } @else {
+      <span class="value" [class.status-chip]="val === 'In progress' || val === 'Completed'">
+        {{ val !== null && val !== undefined ? val : 'N/A' }}
+      </span>
+    }
+  }
+</ng-template>
