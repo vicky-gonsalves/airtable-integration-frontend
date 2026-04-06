@@ -1,0 +1,142 @@
+title Complete Airtable Sync Workflow
+
+actor User
+participant Angular Frontend
+participant Nest.js Backend
+participant Airtable API / Web
+database MongoDB Database
+
+== Initial Page Load & Authentication ==
+User->Angular Frontend: Opens Airtable sync page
+Angular Frontend->Nest.js Backend: GET /airtable/auth/status (Cookie check)
+Nest.js Backend-->Angular Frontend: Returns authenticated state
+
+alt Token valid
+    Angular Frontend->User: Navigates to Workspaces page
+else Token invalid
+    Angular Frontend->User: Navigates to Login page
+end
+
+== Airtable OAuth Connection ==
+User->Angular Frontend: Clicks "Connect Airtable"
+Angular Frontend->Nest.js Backend: GET /airtable/auth/url
+Nest.js Backend-->Angular Frontend: Returns generated OAuth URL
+Angular Frontend->Airtable API / Web: Redirects to Airtable OAuth
+Airtable API / Web-->User: Presents OAuth dialog
+
+alt User authenticates
+    User->Airtable API / Web: Approves access
+    Airtable API / Web->Nest.js Backend: Redirects to /airtable/auth/callback (with code)
+    Nest.js Backend->Airtable API / Web: POST /oauth2/v1/token (Exchange code for token)
+    Airtable API / Web-->Nest.js Backend: Returns access_token
+    Nest.js Backend->Nest.js Backend: Sets HTTP-Only Cookie (airtable_access_token)
+    Nest.js Backend-->Angular Frontend: Redirects to App Client / Workspaces
+    Angular Frontend->User: Displays Workspaces page
+else User cancels / fails
+    Airtable API / Web-->Angular Frontend: Redirects back (Failed)
+    Angular Frontend->User: Redirects to Login page
+end
+
+== Initial Workspaces Load (Default Data) ==
+Angular Frontend->Nest.js Backend: GET /airtable/bases
+Nest.js Backend->Airtable API / Web: Fetch bases
+Airtable API / Web-->Nest.js Backend: Returns bases
+Nest.js Backend-->Angular Frontend: Responds with list of bases
+
+Note over Angular Frontend: Auto-selects first base as default
+Angular Frontend->Nest.js Backend: GET /airtable/tables?baseId={id}
+Nest.js Backend->Airtable API / Web: Fetch tables
+Airtable API / Web-->Nest.js Backend: Returns tables
+Nest.js Backend-->Angular Frontend: Responds with list of tables
+
+Note over Angular Frontend: Auto-selects first table as default
+Angular Frontend->Nest.js Backend: GET /airtable/tickets (paginated via DB)
+Nest.js Backend->MongoDB Database: Fetch tickets & SyncMeta
+MongoDB Database-->Nest.js Backend: Returns synced tickets
+Nest.js Backend-->Angular Frontend: Responds with tickets & SyncMeta
+Angular Frontend->User: Displays default base, table, and synced tickets
+
+== Data Synchronization (Tickets & Users) ==
+User->Angular Frontend: Clicks "Resync Data"
+Angular Frontend->Nest.js Backend: POST /airtable/sync (baseId, tableId)
+
+Nest.js Backend->MongoDB Database: Update SyncMeta status to 'IN_PROGRESS'
+
+loop Pagination (while offset exists)
+    loop API Call (Max 3 Retries)
+        Nest.js Backend->Airtable API / Web: GET records (offset & Access Token)
+        alt 429 Too Many Requests
+            Airtable API / Web-->Nest.js Backend: 429 Error
+            Note over Nest.js Backend: Sleep for 30 seconds
+        else 200 OK
+            Airtable API / Web-->Nest.js Backend: Returns records & new offset
+            Note over Nest.js Backend: Break retry loop
+        end
+    end
+
+    loop For each record
+        Nest.js Backend->MongoDB Database: Upsert into 'tickets' collection
+        Nest.js Backend->MongoDB Database: Extract & Upsert into 'users' collection
+    end
+
+end
+
+Nest.js Backend->MongoDB Database: Delete tickets not in fetch list (Full Sync Cleanup)
+Nest.js Backend->MongoDB Database: Update SyncMeta status to 'SUCCESS'
+Nest.js Backend-->Angular Frontend: Responds { success: true, processed count }
+Angular Frontend->User: Refreshes tickets view
+
+== Revision History Scraper Auth ==
+User->Angular Frontend: Submits Email, Password, MFA code
+Angular Frontend->Nest.js Backend: POST /airtable/scrape/auth
+
+Note over Nest.js Backend, Airtable API / Web: Puppeteer Sequence (Headless)
+Nest.js Backend->Airtable API / Web: Navigate to Login Page
+Nest.js Backend->Airtable API / Web: Type Email & Submit (Validate UI no-error)
+Nest.js Backend->Airtable API / Web: Type Password & Submit (Validate UI no-error)
+Nest.js Backend->Airtable API / Web: Type MFA & Submit (Wait for navigation)
+
+Nest.js Backend->Nest.js Backend: Extract & store cookies in memory array
+Note over Nest.js Backend: Close Puppeteer browser
+Nest.js Backend-->Angular Frontend: Returns Auth Success
+
+== Revision History Scraper Sync ==
+User->Angular Frontend: Clicks "Resync Revision History"
+Angular Frontend->Nest.js Backend: POST /airtable/scrape/run (baseId, tableId, cursor)
+
+Nest.js Backend->Airtable API / Web: Check Cookie Validity (Axios GET web base)
+Airtable API / Web-->Nest.js Backend: Returns 200 OK (Valid)
+
+Nest.js Backend->MongoDB Database: Update SyncMeta revisionSyncStatus 'IN_PROGRESS'
+Nest.js Backend->MongoDB Database: Fetch batch of up to 500 Tickets
+
+loop For each ticket in batch
+    loop While hasMoreHistory (Internal Pagination)
+        loop Axios API Call (Max 5 Retries, Exponential Backoff)
+            Nest.js Backend->Airtable API / Web: GET /rowActivities (Internal API + Cookies + Custom Headers)
+            alt 429 Too Many Requests
+                Airtable API / Web-->Nest.js Backend: 429 Error
+                Note over Nest.js Backend: Exponential Backoff Sleep (1s, 2s, 4s...)
+            else 200 OK
+                Airtable API / Web-->Nest.js Backend: Returns JSON with diffRowHtml
+                Note over Nest.js Backend: Break retry loop
+            end
+        end
+
+        Nest.js Backend->Nest.js Backend: Cheerio parses diffRowHtml to extract clean text/revisions
+
+        loop For each parsed activity
+            Nest.js Backend->MongoDB Database: Upsert into 'revisions' collection
+        end
+        Note over Nest.js Backend: Sleep 300ms (Throttle internal API)
+    end
+end
+
+alt Has more tickets (Batch size == 500)
+    Nest.js Backend->MongoDB Database: Update SyncMeta 'PARTIAL_SUCCESS' & save cursor
+else Batch complete (< 500 tickets)
+    Nest.js Backend->MongoDB Database: Update SyncMeta 'SUCCESS'
+end
+
+Nest.js Backend-->Angular Frontend: Returns { success, hasMore, cursor }
+Angular Frontend->User: Displays success / potentially requests next batch if hasMore
