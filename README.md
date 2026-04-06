@@ -10,10 +10,10 @@ This project is a modern, highly responsive **Angular 19** frontend application 
 ## Interface Snapshots
 
 **Main Dynamic Data Grid & Navigation:**
-<img width="1919" height="897" alt="Main Grid Interface" src="https://github.com/user-attachments/assets/186a3a32-5b1b-4012-ab73-a153630f6e33" />
+<img width="1919" height="897" alt="573046049-186a3a32-5b1b-4012-ab73-a153630f6e33" src="https://github.com/user-attachments/assets/4ba1ff03-bc57-4676-b44d-e5a2d0d71a38" />
 
 **Ticket & Revision History Deep-Dive**
-<img width="1901" height="890" alt="Ticket Dialog Interface" src="https://github.com/user-attachments/assets/7ca27dc7-b894-4d06-9d93-7982b4d9f92f" />
+<img width="1901" height="890" alt="2" src="https://github.com/user-attachments/assets/dfbaa025-a67f-446c-9c94-3683a84358c3" />
 
 ---
 
