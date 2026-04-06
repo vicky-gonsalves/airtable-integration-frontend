@@ -87,3 +87,7 @@ yarn run start
 ng serve
 ```
 Navigate to `http://localhost:4200/` in your browser. The application will automatically reload if you change any of the source files.
+
+
+### Sequence Diagram:
+![Airtable_Sync_UML](https://github.com/user-attachments/assets/9bec9633-b961-4ea7-aab4-3923f7c411f1)
